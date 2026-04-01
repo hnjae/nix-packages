@@ -1,0 +1,13 @@
+# Nix build result:
+result
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit (managed by devenv)
+.pre-commit-config.yaml
