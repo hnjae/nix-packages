@@ -8,3 +8,6 @@ alias fmt := format
 [group('ci')]
 format:
     prek run --hook-stage pre-commit --all-files
+
+show:
+    nix flake show
