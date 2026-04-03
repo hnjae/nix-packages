@@ -11,3 +11,5 @@ devenv.local.yaml
 
 # pre-commit (managed by devenv)
 .pre-commit-config.yaml
+
+.codex
