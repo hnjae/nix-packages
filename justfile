@@ -9,5 +9,9 @@ alias fmt := format
 format:
     prek run --hook-stage pre-commit --all-files
 
+[group('ci')]
+lint:
+    actionlint
+
 show:
     nix flake show
