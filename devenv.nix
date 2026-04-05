@@ -6,6 +6,7 @@
   packages = [
     pkgs.git
     pkgs.just
+    pkgs.actionlint
   ];
 
   languages.nix.enable = true;
