@@ -1,0 +1,42 @@
+---
+name: Update flake.lock
+on:
+  schedule:
+    - cron: '30 7 * * 2' # 매주 화요일 07:30 UTC
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update-flake-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: main
+      - name: Install nix
+        uses: DeterminateSystems/determinate-nix-action@main
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+      - name: Update flake.lock
+        run: nix flake update
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.REPO_BOT_TOKEN }}
+          branch: bot/update-flake-lock
+          delete-branch: true
+          commit-message: "build: update flake.lock"
+          title: "build: update flake.lock"
+          sign-commits: true
+          body: |
+            Automated `nix flake update`.
+          add-paths: |
+            flake.lock
+      - name: Enable auto-merge
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.REPO_BOT_TOKEN }}
+        run: gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash
