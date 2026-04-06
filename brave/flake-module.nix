@@ -24,6 +24,7 @@ in
             commandLineArgs = "--enable-features=TouchpadOverscrollHistoryNavigation";
           }).overrideAttrs
             (old: {
+              # NOTE: Brave and websites do not obey LC_TIME as of 2026-04-07
               preFixup = (old.preFixup or "") + ''
                 gappsWrapperArgs+=(
                   --set LC_ALL en_IE.UTF-8
