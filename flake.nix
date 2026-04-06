@@ -14,6 +14,7 @@
         "aarch64-linux"
       ];
       imports = [
+        ./brave/flake-module.nix
         ./cider/flake-module.nix
         ./obsidian/flake-module.nix
       ];
