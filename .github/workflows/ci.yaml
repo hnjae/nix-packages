@@ -2,9 +2,6 @@
 name: CI
 on:
   pull_request:
-  push:
-    branches:
-      - main
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
       - uses: DeterminateSystems/determinate-nix-action@main
