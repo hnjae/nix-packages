@@ -1,0 +1,48 @@
+---
+name: Update devenv.lock
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '00 8 * * 2' # 매주 화요일 08:00 UTC
+concurrency:
+  group: update-devenv-lock
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  update-devenv-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install nix
+        uses: DeterminateSystems/determinate-nix-action@main
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ github.token }}
+      - name: Install devenv
+        run: nix profile add nixpkgs#devenv
+      - name: Update devenv.lock
+        run: devenv update
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.REPO_BOT_TOKEN }}
+          branch: bot/update-devenv-lock
+          delete-branch: true
+          commit-message: "chore: update devenv.lock"
+          title: "chore: update devenv.lock"
+          sign-commits: true
+          body: |
+            Automated `devenv update`.
+          add-paths: |
+            devenv.lock
+      - name: Enable auto-merge
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.REPO_BOT_TOKEN }}
+        run: gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash
