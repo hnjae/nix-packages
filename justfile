@@ -17,5 +17,9 @@ lint:
 dispatch-flake-update:
     gh workflow run flake-update.yaml --ref main
 
+[group('ci')]
+dispatch-devenv-update:
+    gh workflow run devenv-update.yaml --ref main
+
 show:
     nix flake show
