@@ -13,5 +13,9 @@ format:
 lint:
     actionlint
 
+[group('ci')]
+dispatch-flake-update:
+    gh workflow run flake-update.yaml --ref main
+
 show:
     nix flake show
