@@ -1,0 +1,13 @@
+#!/usr/bin/env -S just --justfile
+
+set fallback := true
+set unstable := true
+
+package := "claude-desktop"
+
+_:
+    @just --list
+
+[env("NIXPKGS_ALLOW_UNFREE", "1")]
+build:
+    nix build --impure ".#{{ package }}"
