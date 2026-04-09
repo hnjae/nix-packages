@@ -3,10 +3,15 @@
   ...
 }:
 {
-  packages = [
-    pkgs.git
-    pkgs.just
-    pkgs.actionlint
+  packages = with pkgs; [
+    git
+    just
+
+    # linters
+    actionlint
+
+    # dev tools
+    dpkg
   ];
 
   languages.nix.enable = true;
@@ -27,7 +32,7 @@
           set -euo pipefail
 
           for file in "$@"; do
-            ${pkgs.just}/bin/just --unstable --fmt --justfile "$file"
+            just --unstable --fmt --justfile "$file"
           done
         ''
       );
@@ -36,10 +41,10 @@
       enable = true;
       package = pkgs.symlinkJoin {
         name = "shell-fmt";
-        paths = [
-          pkgs.shellharden
-          pkgs.shellcheck
-          pkgs.shfmt
+        paths = with pkgs; [
+          shellharden
+          shellcheck
+          shfmt
         ];
       };
       files = ''
