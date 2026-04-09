@@ -1,0 +1,12 @@
+#!/usr/bin/env -S just --justfile
+
+set fallback := true
+set unstable := true
+
+package := "opencode-desktop"
+
+_:
+    @just --list
+
+build:
+    nix build ".#{{ package }}"
