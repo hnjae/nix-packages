@@ -10,15 +10,13 @@ in
       ...
     }:
     let
-      isSupportedSystem = (
-        builtins.elem system [
-          "x86_64-linux"
-          "aarch64-linux"
-        ]
-      );
+      isSupported = builtins.elem system [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
     in
     {
-      packages = lib.optionalAttrs isSupportedSystem {
+      packages = lib.optionalAttrs isSupported {
         ${packageName} =
           (pkgs.${packageName}.override {
             commandLineArgs = "--enable-features=TouchpadOverscrollHistoryNavigation";
