@@ -15,6 +15,7 @@
       ];
       imports = [
         ./brave/flake-module.nix
+        ./claude-desktop/flake-module.nix
         ./cider/flake-module.nix
         ./obsidian/flake-module.nix
       ];
