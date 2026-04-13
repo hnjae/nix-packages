@@ -12,10 +12,12 @@
       systems = [
         "x86_64-linux"
         "aarch64-linux"
+        "aarch64-darwin"
       ];
       imports = [
         ./brave/flake-module.nix
         ./claude-desktop/flake-module.nix
+        ./comment-checker/flake-module.nix
         ./cider/flake-module.nix
         ./obsidian/flake-module.nix
         ./opencode-desktop/flake-module.nix
