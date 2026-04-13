@@ -1,0 +1,13 @@
+#!/usr/bin/env -S just --justfile
+
+PACKAGE := "comment-checker"
+
+set fallback := true
+set unstable := true
+set lazy := true
+
+_:
+    @just --list
+
+build:
+    nix build ".#{{ PACKAGE }}"
