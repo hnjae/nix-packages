@@ -3,6 +3,7 @@
   fetchurl,
   lib,
   makeWrapper,
+  supportedSystems,
   ...
 }:
 let
@@ -67,6 +68,6 @@ appimageTools.wrapType2 rec {
     homepage = "https://github.com/aaddrick/claude-desktop-debian";
     license = lib.licenses.unfree;
     mainProgram = pname;
-    platforms = [ "x86_64-linux" ];
+    platforms = supportedSystems;
   };
 }

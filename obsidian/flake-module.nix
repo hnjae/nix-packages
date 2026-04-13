@@ -1,5 +1,6 @@
 let
   packageName = "obsidian";
+  supportedSystems = [ "x86_64-linux" ];
 in
 {
   perSystem =
@@ -10,8 +11,8 @@ in
       ...
     }:
     {
-      packages = lib.optionalAttrs (system == "x86_64-linux") {
-        ${packageName} = pkgs.callPackage ./derivation.nix { };
+      packages = lib.optionalAttrs (builtins.elem system supportedSystems) {
+        ${packageName} = pkgs.callPackage ./derivation.nix { inherit supportedSystems; };
       };
     };
 }

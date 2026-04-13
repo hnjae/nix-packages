@@ -3,10 +3,18 @@ let
 in
 {
   perSystem =
-    { pkgs, ... }:
     {
-      packages = {
-        ${packageName} = pkgs.callPackage ./derivation.nix { };
+      lib,
+      pkgs,
+      system,
+      ...
+    }:
+    let
+      supportedSystems = lib.platforms.unix;
+    in
+    {
+      packages = lib.optionalAttrs (builtins.elem system supportedSystems) {
+        ${packageName} = pkgs.callPackage ./derivation.nix { inherit supportedSystems; };
       };
     };
 }
