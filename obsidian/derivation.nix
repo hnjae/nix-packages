@@ -3,6 +3,7 @@
   fetchurl,
   lib,
   makeWrapper,
+  supportedSystems,
   ...
 }:
 appimageTools.wrapType2 rec {
@@ -60,6 +61,6 @@ appimageTools.wrapType2 rec {
     homepage = "https://obsidian.md";
     license = lib.licenses.obsidian;
     mainProgram = pname;
-    platforms = [ "x86_64-linux" ];
+    platforms = supportedSystems;
   };
 }
