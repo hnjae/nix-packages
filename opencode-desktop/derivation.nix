@@ -3,6 +3,7 @@
   fetchurl,
   lib,
   makeWrapper,
+  supportedSystems,
   ...
 }:
 appimageTools.wrapType2 rec {
@@ -74,6 +75,6 @@ appimageTools.wrapType2 rec {
     homepage = "https://github.com/anomalyco/opencode";
     license = lib.licenses.mit;
     mainProgram = pname;
-    platforms = [ "x86_64-linux" ];
+    platforms = supportedSystems;
   };
 }
