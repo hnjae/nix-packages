@@ -1,14 +1,13 @@
 {
   pkgs,
+  lib,
   ...
 }:
 {
   packages = with pkgs; [
-    git
-    just
-
-    # linters
+    # static checkers (linters, ...)
     actionlint
+    editorconfig-checker
 
     # dev tools
     dpkg
@@ -18,8 +17,13 @@
 
   git-hooks.hooks = {
     detect-private-keys.enable = true;
+    actionlint.enable = true;
+    typos.enable = true;
+
+    # Formatters
     nixfmt.enable = true;
     rumdl.enable = true;
+    biome.enable = true;
     taplo.enable = true;
     yamlfmt.enable = true;
     just-fmt = {
@@ -27,12 +31,12 @@
       name = "just-fmt";
       package = pkgs.just;
       files = ''(^|/)(\.)?justfile$'';
-      entry = builtins.toString (
+      entry = toString (
         pkgs.writeShellScript "precommit-just-fmt" ''
           set -euo pipefail
 
           for file in "$@"; do
-            just --unstable --fmt --justfile "$file"
+            ${lib.getExe pkgs.just} --unstable --fmt --justfile "$file"
           done
         ''
       );
@@ -55,7 +59,7 @@
           \.profile$
         )
       '';
-      entry = builtins.toString (
+      entry = toString (
         pkgs.writeShellScript "shell-fmt" ''
           set -euo pipefail
 
