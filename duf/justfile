@@ -1,0 +1,12 @@
+#!/usr/bin/env -S just --justfile
+
+set fallback := true
+set unstable := true
+
+PACKAGE := "duf"
+
+_:
+    @just --list
+
+build:
+    nix build ".#{{ PACKAGE }}"

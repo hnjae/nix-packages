@@ -21,6 +21,7 @@
         ./cider/flake-module.nix
         ./obsidian/flake-module.nix
         ./opencode-desktop/flake-module.nix
+        ./duf/flake-module.nix
       ];
     };
 }
