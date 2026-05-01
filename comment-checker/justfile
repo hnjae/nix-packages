@@ -2,9 +2,9 @@
 
 PACKAGE := "comment-checker"
 
-set fallback := true
-set unstable := true
-set lazy := true
+set fallback
+set unstable
+set lazy
 
 _:
     @just --list
