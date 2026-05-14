@@ -10,4 +10,4 @@ _:
 
 [env("NIXPKGS_ALLOW_UNFREE", "1")]
 build:
-    nix build --impure ".#{{ package }}"
+    nix build --impure "..#{{ package }}"
