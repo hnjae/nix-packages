@@ -9,6 +9,7 @@
 appimageTools.wrapType2 rec {
   pname = "obsidian";
   version = "1.12.7";
+  appId = "md.obsidian.Obsidian";
 
   src = fetchurl {
     url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
@@ -23,9 +24,12 @@ appimageTools.wrapType2 rec {
       };
     in
     ''
-      wrapProgram $out/bin/${pname} \
+      mv "$out/bin/${pname}" "$out/bin/${appId}"
+
+      wrapProgram $out/bin/${appId} \
         --set LC_ALL en_IE.UTF-8 \
         --add-flags "--no-sandbox" \
+        --add-flags "--class=${appId}" \
         --add-flags "--enable-features=WaylandWindowDecorations" \
         --add-flags "--enable-features=UseOzonePlatform" \
         --add-flags "--ozone-platform-hint=auto" \
@@ -33,16 +37,18 @@ appimageTools.wrapType2 rec {
         --add-flags "--wayland-text-input-version=3"
 
 
-      install -m 444 -D ${contents}/obsidian.desktop $out/share/applications/${pname}.desktop
+      install -m 444 -D ${contents}/obsidian.desktop $out/share/applications/${appId}.desktop
 
-      substituteInPlace "$out/share/applications/${pname}.desktop" \
-        --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${pname} %U'
+      substituteInPlace "$out/share/applications/${appId}.desktop" \
+        --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U' \
+        --replace-warn 'Icon=obsidian' 'Icon=${appId}' \
+        --replace-warn 'StartupWMClass=obsidian' 'StartupWMClass=${appId}'
 
       ${lib.concatMapStrings
         (size: ''
           mkdir -p "$out/share/icons/hicolor/${size}x${size}/apps"
           cp --reflink=auto "${contents}/usr/share/icons/hicolor/${size}x${size}/apps/obsidian.png" \
-            "$out/share/icons/hicolor/${size}x${size}/apps/${pname}.png"
+            "$out/share/icons/hicolor/${size}x${size}/apps/${appId}.png"
         '')
         [
           "16"
@@ -60,7 +66,7 @@ appimageTools.wrapType2 rec {
     description = "A powerful knowledge base that works on top of a local folder of plain text Markdown files";
     homepage = "https://obsidian.md";
     license = lib.licenses.obsidian;
-    mainProgram = pname;
+    mainProgram = appId;
     platforms = supportedSystems;
   };
 }
