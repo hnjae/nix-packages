@@ -19,6 +19,7 @@
         ./claude-desktop/flake-module.nix
         ./comment-checker/flake-module.nix
         ./cider/flake-module.nix
+        ./libheif/flake-module.nix
         ./obsidian/flake-module.nix
         ./opencode-desktop/flake-module.nix
       ];
