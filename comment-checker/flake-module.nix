@@ -14,7 +14,7 @@ in
     in
     {
       packages = lib.optionalAttrs (builtins.elem system supportedSystems) {
-        ${packageName} = pkgs.callPackage ./derivation.nix { inherit supportedSystems; };
+        ${packageName} = pkgs.callPackage ./package.nix { inherit supportedSystems; };
       };
     };
 }
