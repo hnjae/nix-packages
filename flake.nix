@@ -20,6 +20,7 @@
         cider = ./cider/package.nix;
         claude-desktop = ./claude-desktop/package.nix;
         comment-checker = ./comment-checker/package.nix;
+        kdecodexbar = ./kdecodexbar/package.nix;
         libheif = ./libheif/package.nix;
         obsidian = ./obsidian/package.nix;
         opencode-desktop = ./opencode-desktop/package.nix;
