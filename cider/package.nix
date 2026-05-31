@@ -9,7 +9,6 @@
   makeWrapper,
   requireFile,
   lib,
-  supportedSystems,
   ...
 }:
 appimageTools.wrapType2 rec {
@@ -60,6 +59,6 @@ appimageTools.wrapType2 rec {
     homepage = "https://cider.sh";
     license = lib.licenses.unfree;
     mainProgram = pname;
-    platforms = supportedSystems;
+    platforms = [ "x86_64-linux" ];
   };
 }

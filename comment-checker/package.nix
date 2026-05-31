@@ -2,7 +2,6 @@
   buildGoModule,
   fetchFromGitHub,
   lib,
-  supportedSystems,
   ...
 }:
 buildGoModule rec {
@@ -34,6 +33,6 @@ buildGoModule rec {
     homepage = "https://github.com/code-yeongyu/go-claude-code-comment-checker";
     license = lib.licenses.mit;
     mainProgram = "comment-checker";
-    platforms = supportedSystems;
+    platforms = lib.platforms.unix;
   };
 }
