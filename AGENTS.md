@@ -2,9 +2,9 @@
 
 ## Project Structure & Module Organization
 
-- Root [`flake.nix`](./flake.nix) defines supported systems and imports package modules.
+- Root [`flake.nix`](./flake.nix) defines supported systems and exports available packages with `callPackage`.
 - Keep each package in its own directory, named after the exported package.
-- Package layout: `package/flake-module.nix`, `package/package.nix`
+- Package layout: `package/package.nix`
 - Shared dev setup lives in [`devenv.nix`](./devenv.nix). CI lives in [`.github/workflows/ci.yaml`](./.github/workflows/ci.yaml).
 
 ## Build, Test, and Development Commands
@@ -26,5 +26,4 @@
 
 - This repository follows a trunk-based workflow with short-lived branches.
 - Direct pushes to `main` are not possible; changes must land through a PR.
-- Use Conventional Commits specification.
 - PRs should summarize the change.

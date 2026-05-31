@@ -4,7 +4,6 @@
   lib,
   makeWrapper,
   nodejs,
-  supportedSystems,
   ...
 }:
 let
@@ -117,6 +116,6 @@ appimageTools.wrapAppImage rec {
     homepage = "https://obsidian.md";
     license = lib.licenses.obsidian;
     mainProgram = appId;
-    platforms = supportedSystems;
+    platforms = [ "x86_64-linux" ];
   };
 }
