@@ -2,7 +2,7 @@
   description = "Packages that are either not in nixpkgs or not packaged to our taste.";
 
   inputs = {
-    nixpkgs.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0"; # Stable nixpkgs
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0"; # Most recently published stable
   };
 
   outputs =
