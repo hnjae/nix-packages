@@ -1,16 +1,16 @@
 ---
-name: Update flake.lock
+name: Update lock files
 on:
   workflow_dispatch:
   schedule:
     - cron: '30 7 * * 2' # 매주 화요일 07:30 UTC
 concurrency:
-  group: update-flake-lock
+  group: update-lock-files
   cancel-in-progress: false
 permissions:
   contents: read
 jobs:
-  update-flake-lock:
+  update-lock-files:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,22 +22,28 @@ jobs:
         with:
           extra-conf: |
             experimental-features = nix-command flakes
+            access-tokens = github.com=${{ github.token }}
+      - name: Install devenv
+        run: nix profile add nixpkgs#devenv
       - name: Update flake.lock
         run: nix flake update
+      - name: Update devenv.lock
+        run: devenv update
       - name: Create PR
         id: cpr
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.REPO_BOT_TOKEN }}
-          branch: bot/update-flake-lock
+          branch: bot/update-lock-files
           delete-branch: true
-          commit-message: "build: update flake.lock"
-          title: "build: update flake.lock"
+          commit-message: "build: update lock files"
+          title: "build: update lock files"
           sign-commits: true
           body: |
-            Automated `nix flake update`.
+            Automated lock file update.
           add-paths: |
             flake.lock
+            devenv.lock
       - name: Enable auto-merge
         if: ${{ steps.cpr.outputs.pull-request-number }}
         env:
