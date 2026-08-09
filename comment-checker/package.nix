@@ -1,32 +1,39 @@
 {
-  buildGoModule,
   fetchFromGitHub,
+  fetchurl,
   lib,
+  rustPlatform,
   ...
 }:
-buildGoModule rec {
+rustPlatform.buildRustPackage rec {
   pname = "comment-checker";
-  version = "0.7.0";
+  version = "0.8.0";
 
   src = fetchFromGitHub {
     owner = "code-yeongyu";
     repo = "go-claude-code-comment-checker";
     rev = "v${version}";
-    hash = "sha256-RyZlVPJ+G3Vvt5Mhja7mxSe8bd+BfsYqbbrfqjjCbYE=";
+    hash = "sha256-rV51+vo+6BEU3vh4/WVZxRbNXmvqyrAjMwl872+4MW0=";
   };
 
-  subPackages = [ "cmd/comment-checker" ];
+  cargoHash = "sha256-OieMIlyo4ENmakJIiqHVwSF7wk96TN15FnjbrVYTyaA=";
 
-  proxyVendor = true;
+  env = {
+    TSLP_LINK_MODE = "static";
+    TSLP_SOURCE_BUNDLE_URL = "file://${
+      fetchurl {
+        url = "https://github.com/kreuzberg-dev/tree-sitter-language-pack/releases/download/v1.8.1/parser-sources-1.8.1.tar.zst";
+        hash = "sha256-Kcds8n8X7dE5gRhVPd3pvouemXDAAXs4fFNGbPLkhxc=";
+      }
+    }";
+  };
 
-  env.CGO_ENABLED = 1;
-
-  ldflags = [
-    "-s"
-    "-w"
+  cargoBuildFlags = [
+    "-p"
+    pname
   ];
 
-  vendorHash = "sha256-cW/cWo6k7aA/Z2w6+CBAdNKhEiWN1cZiv/hl2Mto6Gw=";
+  cargoTestFlags = cargoBuildFlags;
 
   meta = {
     description = "Claude Code and OpenCode hook that blocks unnecessary code comments";
