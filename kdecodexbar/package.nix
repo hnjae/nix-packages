@@ -3,6 +3,7 @@
   fetchFromGitHub,
   kdePackages,
   lib,
+  nix-update-script,
   stdenv,
   ...
 }:
@@ -39,6 +40,10 @@ stdenv.mkDerivation rec {
   postInstall = ''
     install -Dm444 "$src/LICENSE" "$out/share/licenses/${pname}/LICENSE"
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "AI usage tracker for KDE Plasma";

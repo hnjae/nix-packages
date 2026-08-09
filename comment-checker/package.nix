@@ -2,6 +2,7 @@
   fetchFromGitHub,
   fetchurl,
   lib,
+  nix-update-script,
   rustPlatform,
   ...
 }:
@@ -34,6 +35,10 @@ rustPlatform.buildRustPackage rec {
   ];
 
   cargoTestFlags = cargoBuildFlags;
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "Claude Code and OpenCode hook that blocks unnecessary code comments";
