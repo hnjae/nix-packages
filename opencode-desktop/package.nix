@@ -5,13 +5,16 @@
   makeWrapper,
   ...
 }:
+let
+  appId = "ai.opencode.desktop";
+in
 appimageTools.wrapType2 rec {
   pname = "opencode-desktop";
-  version = "1.4.1";
+  version = "1.18.15";
 
   src = fetchurl {
-    url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-electron-linux-x86_64.AppImage";
-    hash = "sha256-FyRJXCkrClqTqspxI73paHlK+bMVSDLV10WSxLmMElk=";
+    url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-desktop-linux-x86_64.AppImage";
+    hash = "sha256-lKJq9LBcc8T+HCOQkFolIi9Ces8frR9LWWJopYJ/hLg=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
@@ -23,8 +26,11 @@ appimageTools.wrapType2 rec {
     in
     # bash
     ''
-      wrapProgram $out/bin/${pname} \
+      mv "$out/bin/${pname}" "$out/bin/${appId}"
+
+      wrapProgram $out/bin/${appId} \
         --add-flags "--no-sandbox" \
+        --add-flags "--class=${appId}" \
         --add-flags "--enable-features=WaylandWindowDecorations" \
         --add-flags "--enable-features=UseOzonePlatform" \
         --add-flags "--ozone-platform-hint=auto" \
@@ -33,37 +39,30 @@ appimageTools.wrapType2 rec {
 
       shopt -s nullglob
 
-      desktopFiles=(
-        ${contents}/*.desktop
-        ${contents}/usr/share/applications/*.desktop
-      )
+      desktopFile=
+      for candidate in ${contents}/*.desktop ${contents}/usr/share/applications/*.desktop; do
+        if grep -Iq '^\[Desktop Entry\]' "$candidate"; then
+          desktopFile="$candidate"
+          break
+        fi
+      done
 
-      if [ "''${#desktopFiles[@]}" -eq 0 ]; then
+      if [ -z "$desktopFile" ]; then
         echo "ERR: No desktop entry found in extracted AppImage" >&2
         exit 1
       fi
 
-      install -m 444 -D "''${desktopFiles[0]}" "$out/share/applications/${pname}.desktop"
+      install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
 
-      substituteInPlace "$out/share/applications/${pname}.desktop" \
-        --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${pname} %U' \
-        --replace-warn 'Exec=AppRun %U' 'Exec=${pname} %U' \
-        --replace-warn 'Exec=AppRun --no-sandbox' 'Exec=${pname}' \
-        --replace-warn 'Exec=AppRun' 'Exec=${pname}' \
-        --replace-warn 'Icon=@opencode-aidesktop-electron' 'Icon=${pname}' \
-        --replace-warn 'Icon=OpenCode' 'Icon=${pname}' \
-        --replace-warn 'Icon=opencode-electron' 'Icon=${pname}' \
-        --replace-warn 'Icon=opencode-desktop-desktop' 'Icon=${pname}' \
-        --replace-warn 'StartupWMClass=OpenCode' 'StartupWMClass=${pname}' \
-        --replace-warn 'StartupWMClass=opencode-electron' 'StartupWMClass=${pname}' \
-        --replace-warn 'StartupWMClass=opencode-desktop-desktop' 'StartupWMClass=${pname}'
+      substituteInPlace "$out/share/applications/${appId}.desktop" \
+        --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U'
 
       for iconPath in ${contents}/usr/share/icons/hicolor/*x*/apps/*.png; do
         size="$(basename -- "$(dirname -- "$(dirname -- "$iconPath")")")"
 
         case "$size" in
           32x32|48x48|64x64|128x128|256x256)
-            install -m 444 -D "$iconPath" "$out/share/icons/hicolor/$size/apps/${pname}.png"
+            install -m 444 -D "$iconPath" "$out/share/icons/hicolor/$size/apps/${appId}.png"
             ;;
         esac
       done
@@ -73,7 +72,7 @@ appimageTools.wrapType2 rec {
     description = "AI-powered development tool desktop app";
     homepage = "https://github.com/anomalyco/opencode";
     license = lib.licenses.mit;
-    mainProgram = pname;
+    mainProgram = appId;
     platforms = [ "x86_64-linux" ];
   };
 }

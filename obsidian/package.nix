@@ -11,13 +11,13 @@ let
 in
 appimageTools.wrapAppImage rec {
   pname = "obsidian";
-  version = "1.12.7";
+  version = "1.13.4";
 
   src = appimageTools.extract {
     inherit pname version;
     src = fetchurl {
       url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
-      hash = "sha256-9ti5b+aFqGMsgZzAk6JIrOD2urQQ9EpskpomEbHrsXw=";
+      hash = "sha256-tm8B0qavu2t6vZPktcZgJkXwPBatLW3Un9WpDd3YeHI=";
     };
     postExtract = ''
       ${nodejs}/bin/node <<'EOF'
