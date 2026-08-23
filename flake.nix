@@ -22,6 +22,7 @@
         comment-checker = ./comment-checker/package.nix;
         kdecodexbar = ./kdecodexbar/package.nix;
         libheif = ./libheif/package.nix;
+        lobehub-desktop = ./lobehub-desktop/package.nix;
         obsidian = ./obsidian/package.nix;
         opencode-desktop = ./opencode-desktop/package.nix;
       };
