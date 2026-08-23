@@ -7,6 +7,10 @@
   ...
 }:
 libheif.overrideAttrs (old: {
+  passthru = (old.passthru or { }) // {
+    updateScript = null;
+  };
+
   buildInputs = (old.buildInputs or [ ]) ++ [
     openh264
     openjpeg

@@ -3,6 +3,7 @@
     - Release Notes: <https://cider.sh/changelogs>
     - To download binary: <https://taproom.cider.sh/about>
     - Purchased from: <https://cidercollective.itch.io/cider>
+    - Updates remain manual because CI cannot access the purchased AppImage.
 */
 {
   appimageTools,

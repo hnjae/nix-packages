@@ -1,0 +1,122 @@
+---
+name: Update packages
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 17 * * 2,5' # 수요일과 토요일 02:00 KST
+concurrency:
+  group: update-packages
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  discover:
+    name: Discover updateable packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.packages.outputs.packages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install nix
+        uses: DeterminateSystems/determinate-nix-action@main
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ github.token }}
+      - name: Discover updateable packages
+        id: packages
+        env:
+          NIXPKGS_ALLOW_UNFREE: "1"
+        run: |
+          packages="$(
+            nix eval --impure --json --no-write-lock-file \
+              .#packages.x86_64-linux \
+              --apply 'packages: builtins.filter (name: ((builtins.getAttr name packages).updateScript or null) != null) (builtins.attrNames packages)'
+          )"
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+  update:
+    name: Update ${{ matrix.package }}
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        package: ${{ fromJSON(needs.discover.outputs.packages) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install nix
+        uses: DeterminateSystems/determinate-nix-action@main
+        with:
+          extra-conf: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ github.token }}
+      - name: Update package
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NIXPKGS_ALLOW_UNFREE: "1"
+          PACKAGE: ${{ matrix.package }}
+        run: |
+          nixpkgs_path="$(
+            nix eval --impure --raw --expr \
+              '(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath'
+          )"
+          export NIX_PATH="nixpkgs=$nixpkgs_path"
+
+          nix run "$nixpkgs_path#nix-update" -- \
+            --flake \
+            --use-update-script \
+            "$PACKAGE"
+
+          changed=false
+          while IFS= read -r status_line; do
+            [ -n "$status_line" ] || continue
+            path="${status_line:3}"
+
+            case "$path" in
+              "$PACKAGE"/*)
+                changed=true
+                ;;
+              *)
+                echo "ERR: updater changed unexpected path: $path" >&2
+                exit 1
+                ;;
+            esac
+          done < <(git status --short)
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+      - name: Build updated package
+        if: ${{ steps.update.outputs.changed == 'true' }}
+        env:
+          NIXPKGS_ALLOW_UNFREE: "1"
+          PACKAGE: ${{ matrix.package }}
+        run: nix build --impure --no-write-lock-file --no-link ".#$PACKAGE"
+      - name: Create PR
+        id: cpr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.REPO_BOT_TOKEN }}
+          branch: bot/update-${{ matrix.package }}
+          delete-branch: true
+          commit-message: "chore(${{ matrix.package }}): update package"
+          title: "chore(${{ matrix.package }}): update package"
+          sign-commits: true
+          body: |
+            Automated package update using `passthru.updateScript`.
+
+            The updated package was built successfully before this PR was created.
+          add-paths: |
+            ${{ matrix.package }}/
+      - name: Enable auto-merge
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.REPO_BOT_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --auto --squash

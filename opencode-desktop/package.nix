@@ -3,6 +3,7 @@
   fetchurl,
   lib,
   makeWrapper,
+  nix-update-script,
   ...
 }:
 let
@@ -67,6 +68,10 @@ appimageTools.wrapType2 rec {
         esac
       done
     '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "AI-powered development tool desktop app";

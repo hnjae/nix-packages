@@ -7,6 +7,10 @@
   commandLineArgs = "--enable-features=TouchpadOverscrollHistoryNavigation --class=com.brave.Browser";
 }).overrideAttrs
   (old: {
+    passthru = (old.passthru or { }) // {
+      updateScript = null;
+    };
+
     postInstall = (old.postInstall or "") + ''
       rm -f $out/share/applications/brave-browser.desktop
       sed -i '/^# This is the same as brave-browser.desktop except NoDisplay=true prevents$/,/^NoDisplay=true$/d' \

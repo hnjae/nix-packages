@@ -6,6 +6,7 @@
   ...
 }:
 let
+  # NOTE: Updates remain manual until this package supports the upstream claude-desktop-unofficial asset layout.
   wrapperVersion = "1.3.27";
   claudeVersion = "1.1348.0";
 in

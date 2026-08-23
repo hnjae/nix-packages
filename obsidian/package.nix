@@ -3,22 +3,25 @@
   fetchurl,
   lib,
   makeWrapper,
+  nix-update-script,
   nodejs,
   ...
 }:
 let
   appId = "md.obsidian.Obsidian";
+  version = "1.13.4";
+  appImage = fetchurl {
+    url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
+    hash = "sha256-tm8B0qavu2t6vZPktcZgJkXwPBatLW3Un9WpDd3YeHI=";
+  };
 in
 appimageTools.wrapAppImage rec {
   pname = "obsidian";
-  version = "1.13.4";
+  inherit version;
 
   src = appimageTools.extract {
     inherit pname version;
-    src = fetchurl {
-      url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
-      hash = "sha256-tm8B0qavu2t6vZPktcZgJkXwPBatLW3Un9WpDd3YeHI=";
-    };
+    src = appImage;
     postExtract = ''
       ${nodejs}/bin/node <<'EOF'
       const crypto = require("crypto");
@@ -110,6 +113,13 @@ appimageTools.wrapAppImage rec {
       ]
     }
   '';
+
+  passthru = {
+    src = appImage;
+    updateScript = nix-update-script {
+      extraArgs = [ "--flake" ];
+    };
+  };
 
   meta = {
     description = "A powerful knowledge base that works on top of a local folder of plain text Markdown files";
