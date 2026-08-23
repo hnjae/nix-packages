@@ -2,6 +2,7 @@
   appimageTools,
   fetchurl,
   makeWrapper,
+  nix-update-script,
   ...
 }:
 appimageTools.wrapType2 rec {
@@ -60,6 +61,10 @@ appimageTools.wrapType2 rec {
           "$out/share/icons/hicolor/$size/apps/${pname}.$extension"
       done
     '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "Desktop version of LobeHub, an open-source modern design AI chat framework";
