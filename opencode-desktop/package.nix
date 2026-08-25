@@ -11,11 +11,11 @@ let
 in
 appimageTools.wrapType2 rec {
   pname = "opencode-desktop";
-  version = "1.18.15";
+  version = "1.18.23";
 
   src = fetchurl {
     url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-desktop-linux-x86_64.AppImage";
-    hash = "sha256-lKJq9LBcc8T+HCOQkFolIi9Ces8frR9LWWJopYJ/hLg=";
+    hash = "sha256-yxWO6nGFaiiHoJVvdYu08TzMRn7PsSZP/d1qiMn2324=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
