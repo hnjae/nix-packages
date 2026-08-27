@@ -70,27 +70,50 @@ jobs:
           )"
           export NIX_PATH="nixpkgs=$nixpkgs_path"
 
-          nix run "$nixpkgs_path#nix-update" -- \
+          # Updater failures (e.g. no stable release yet, assets not published)
+          # are reported but do not fail the run: discard partial edits, skip
+          # this package, keep other matrix jobs unaffected.
+          changed=false
+          update_log="$(mktemp)"
+
+          if ! nix run "$nixpkgs_path#nix-update" -- \
             --flake \
             --use-update-script \
-            "$PACKAGE"
+            "$PACKAGE" 2>&1 | tee "$update_log"; then
+            git checkout -- "$PACKAGE" || true
 
-          changed=false
-          while IFS= read -r status_line; do
-            [ -n "$status_line" ] || continue
-            path="${status_line:3}"
+            failed_reason="$(
+              grep -E 'nix_update\.errors\.[A-Za-z]+:|^error:|cannot download' "$update_log" \
+                | sed 's/\r$//' | tail -3 | tr '\n' '; '
+            )"
+            [ -n "$failed_reason" ] \
+              || failed_reason="updater exited with an unexpected error, see the step log"
 
-            case "$path" in
-              "$PACKAGE"/*)
-                changed=true
-                ;;
-              *)
-                echo "ERR: updater changed unexpected path: $path" >&2
-                exit 1
-                ;;
-            esac
-          done < <(git status --short)
+            {
+              echo "## Updater skipped: ${PACKAGE}"
+              echo ""
+              echo "${failed_reason}"
+              echo ""
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Package update skipped for ${PACKAGE}::${failed_reason}"
+          else
+            while IFS= read -r status_line; do
+              [ -n "$status_line" ] || continue
+              path="${status_line:3}"
 
+              case "$path" in
+                "$PACKAGE"/*)
+                  changed=true
+                  ;;
+                *)
+                  echo "ERR: updater changed unexpected path: $path" >&2
+                  exit 1
+                  ;;
+              esac
+            done < <(git status --short)
+          fi
+
+          rm -f "$update_log"
           echo "changed=$changed" >> "$GITHUB_OUTPUT"
       - name: Build updated package
         if: ${{ steps.update.outputs.changed == 'true' }}
@@ -100,6 +123,7 @@ jobs:
         run: nix build --impure --no-write-lock-file --no-link ".#$PACKAGE"
       - name: Create PR
         id: cpr
+        if: ${{ steps.update.outputs.changed == 'true' }}
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.REPO_BOT_TOKEN }}
