@@ -9,10 +9,10 @@
 }:
 let
   appId = "md.obsidian.Obsidian";
-  version = "1.13.4";
+  version = "1.13.7";
   appImage = fetchurl {
     url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
-    hash = "sha256-tm8B0qavu2t6vZPktcZgJkXwPBatLW3Un9WpDd3YeHI=";
+    hash = "sha256-4NjgphFiTejJx9zYqeZIJ5+woNVS+qExK35POl+nJmM=";
   };
 in
 appimageTools.wrapAppImage rec {
@@ -89,7 +89,22 @@ appimageTools.wrapAppImage rec {
       --add-flags "--wayland-text-input-version=3"
 
 
-    install -m 444 -D ${src}/obsidian.desktop $out/share/applications/${appId}.desktop
+    shopt -s nullglob
+
+    desktopFile=
+    for candidate in ${src}/*.desktop ${src}/usr/share/applications/*.desktop; do
+      if grep -Iq '^\[Desktop Entry\]' "$candidate"; then
+        desktopFile="$candidate"
+        break
+      fi
+    done
+
+    if [ -z "$desktopFile" ]; then
+      echo "ERR: No desktop entry found in extracted AppImage" >&2
+      exit 1
+    fi
+
+    install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
 
     substituteInPlace "$out/share/applications/${appId}.desktop" \
       --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U' \
@@ -104,6 +119,7 @@ appimageTools.wrapAppImage rec {
       '')
       [
         "16"
+        "24"
         "32"
         "48"
         "64"
