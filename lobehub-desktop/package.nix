@@ -1,6 +1,7 @@
 {
   appimageTools,
   fetchurl,
+  imagemagick,
   makeWrapper,
   nix-update-script,
   ...
@@ -14,9 +15,13 @@ appimageTools.wrapType2 rec {
     hash = "sha256-aIeQa2I9OcBrOo2Dwuxeq+DQE/xmabw1/fXu1DgFq24=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [
+    imagemagick
+    makeWrapper
+  ];
   extraInstallCommands =
     let
+      appId = "lobehub";
       contents = appimageTools.extract {
         inherit version src pname;
       };
@@ -46,20 +51,18 @@ appimageTools.wrapType2 rec {
         exit 1
       fi
 
-      install -m 444 -D "$desktopFile" "$out/share/applications/${pname}.desktop"
+      install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
 
-      substituteInPlace "$out/share/applications/${pname}.desktop" \
-        --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=${pname} %U'
+      substituteInPlace "$out/share/applications/${appId}.desktop" \
+        --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=${pname} %U' \
+        --replace-fail 'Icon=${pname}' 'Icon=${appId}' \
+        --replace-fail 'StartupWMClass=LobeHub' 'StartupWMClass=${appId}'
 
-      for iconPath in ${contents}/usr/share/icons/hicolor/*/apps/*; do
-        [ -f "$iconPath" ] || continue
-
-        size="$(basename -- "$(dirname -- "$(dirname -- "$iconPath")")")"
-        extension="''${iconPath##*.}"
-
-        install -m 444 -D "$iconPath" \
-          "$out/share/icons/hicolor/$size/apps/${pname}.$extension"
-      done
+      iconDir="$out/share/icons/hicolor/512x512/apps"
+      mkdir -p "$iconDir"
+      magick "${contents}/usr/share/icons/hicolor/514x514/apps/${pname}.png" \
+        -resize 512x512 "$iconDir/${appId}.png"
+      chmod 444 "$iconDir/${appId}.png"
     '';
 
   passthru.updateScript = nix-update-script {
