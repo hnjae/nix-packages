@@ -6,9 +6,13 @@
   nix-update-script,
   ...
 }:
+let
+  appId = "com.lobehub.lobehub-desktop";
+  version = "2.2.15";
+in
 appimageTools.wrapType2 rec {
   pname = "lobehub-desktop";
-  version = "2.2.15";
+  inherit version;
 
   src = fetchurl {
     url = "https://github.com/lobehub/lobehub/releases/download/v${version}/LobeHub-${version}.AppImage";
@@ -21,14 +25,15 @@ appimageTools.wrapType2 rec {
   ];
   extraInstallCommands =
     let
-      appId = "lobehub";
       contents = appimageTools.extract {
         inherit version src pname;
       };
     in
     # bash
     ''
-      wrapProgram $out/bin/${pname} \
+      mv "$out/bin/${pname}" "$out/bin/${appId}"
+
+      wrapProgram "$out/bin/${appId}" \
         --add-flags "--no-sandbox" \
         --add-flags "--enable-features=WaylandWindowDecorations" \
         --add-flags "--enable-features=UseOzonePlatform" \
@@ -54,9 +59,9 @@ appimageTools.wrapType2 rec {
       install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
 
       substituteInPlace "$out/share/applications/${appId}.desktop" \
-        --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=${pname} %U' \
-        --replace-fail 'Icon=${pname}' 'Icon=${appId}' \
-        --replace-fail 'StartupWMClass=LobeHub' 'StartupWMClass=${appId}'
+        --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U' \
+        --replace-warn 'Icon=${pname}' 'Icon=${appId}' \
+        --replace-warn 'StartupWMClass=LobeHub' 'StartupWMClass=lobehub'
 
       iconDir="$out/share/icons/hicolor/512x512/apps"
       mkdir -p "$iconDir"
@@ -77,7 +82,7 @@ appimageTools.wrapType2 rec {
       url = "https://github.com/lobehub/lobehub/blob/main/LICENSE";
       free = false;
     };
-    mainProgram = pname;
+    mainProgram = appId;
     platforms = [ "x86_64-linux" ];
   };
 }

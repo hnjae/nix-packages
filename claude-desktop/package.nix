@@ -31,13 +31,17 @@
   udev,
   writeShellScript,
 }:
+let
+  appId = "com.anthropic.Claude";
+  version = "1.40609.0";
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "claude-desktop";
-  version = "1.37937.3";
+  inherit version;
 
   src = fetchurl {
-    url = "https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${finalAttrs.version}_amd64.deb";
-    hash = "sha256-U1kMVyX7NIcpn5QPW4nVUYKw+u4Uyhvz41utrg9hE18=";
+    url = "https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_amd64.deb";
+    hash = "sha256-qW6W/4601Nf/p4Wrp/wj+GhLEqyD7S70Bg8PCfQXepg=";
   };
 
   nativeBuildInputs = [
@@ -105,7 +109,7 @@ stdenv.mkDerivation (finalAttrs: {
       fi
     done
 
-    makeWrapper "$out/lib/${finalAttrs.pname}/${finalAttrs.pname}" "$out/bin/${finalAttrs.pname}" \
+    makeWrapper "$out/lib/${finalAttrs.pname}/${finalAttrs.pname}" "$out/bin/${appId}" \
       --add-flags "--no-sandbox" \
       --add-flags "--enable-features=WaylandWindowDecorations" \
       --add-flags "--enable-features=UseOzonePlatform" \
@@ -118,6 +122,16 @@ stdenv.mkDerivation (finalAttrs: {
       echo "ERR: No desktop entry found in deb contents" >&2
       exit 1
     fi
+
+    substituteInPlace "$out/share/applications/${appId}.desktop" \
+      --replace-warn 'Exec=claude-desktop' 'Exec=${appId}' \
+      --replace-warn 'Icon=claude-desktop' 'Icon=${appId}'
+
+    for dir in "$out"/share/icons/hicolor/*/apps; do
+      if [ -f "$dir/claude-desktop.png" ]; then
+        mv "$dir/claude-desktop.png" "$dir/${appId}.png"
+      fi
+    done
 
     runHook postInstall
   '';
@@ -184,8 +198,8 @@ stdenv.mkDerivation (finalAttrs: {
     fi
 
     sed -i \
-      -e 's/version = "'"$currentVersion"'";/version = "'"$latestVersion"'";/' \
-      -e 's/hash = "'"$oldHash"'";/hash = "'"$newHash"'";/' \
+      -e 's|version = "'"$currentVersion"'";|version = "'"$latestVersion"'";|' \
+      -e 's|hash = "'"$oldHash"'";|hash = "'"$newHash"'";|' \
       "$packageFile"
 
     echo "updated claude-desktop: $currentVersion -> $latestVersion ($newHash)"
@@ -195,7 +209,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Official Claude Desktop app for Linux";
     homepage = "https://claude.com/download";
     license = lib.licenses.unfree;
-    mainProgram = "claude-desktop";
+    mainProgram = appId;
     platforms = [ "x86_64-linux" ];
   };
 })

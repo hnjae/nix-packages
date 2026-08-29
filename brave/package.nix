@@ -1,6 +1,5 @@
 {
   brave,
-  lib,
   ...
 }:
 (brave.override {
@@ -12,10 +11,15 @@
     };
 
     postInstall = (old.postInstall or "") + ''
+      mv $out/bin/brave $out/bin/com.brave.Browser
+      ln -s com.brave.Browser $out/bin/brave
+
       rm -f $out/share/applications/brave-browser.desktop
       sed -i '/^# This is the same as brave-browser.desktop except NoDisplay=true prevents$/,/^NoDisplay=true$/d' \
         $out/share/applications/com.brave.Browser.desktop
       substituteInPlace $out/share/applications/com.brave.Browser.desktop \
+        --replace-fail "$out/bin/brave" "$out/bin/com.brave.Browser" \
+        --replace-fail 'StartupWMClass=brave-browser' 'StartupWMClass=com.brave.Browser' \
         --replace-fail 'Icon=brave-browser' 'Icon=com.brave.Browser'
       substituteInPlace $out/share/gnome-control-center/default-apps/brave-browser.xml \
         --replace-fail '<icon-name>brave-browser</icon-name>' '<icon-name>com.brave.Browser</icon-name>'
@@ -45,6 +49,7 @@
     '';
 
     meta = (old.meta or { }) // {
+      mainProgram = "com.brave.Browser";
       platforms = [
         "x86_64-linux"
         "aarch64-linux"

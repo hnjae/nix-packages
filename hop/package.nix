@@ -17,6 +17,7 @@
   wrapGAppsHook3,
 }:
 let
+  appId = "net.golbin.hop";
   version = "0.4.4";
 
   src = fetchFromGitHub {
@@ -84,7 +85,18 @@ rustPlatform.buildRustPackage {
   doCheck = false;
 
   postInstall = ''
-    mv "$out/share/applications/HOP.desktop" "$out/share/applications/hop-desktop.desktop"
+    mv "$out/bin/hop-desktop" "$out/bin/${appId}"
+
+    mv "$out/share/applications/HOP.desktop" "$out/share/applications/${appId}.desktop"
+    substituteInPlace "$out/share/applications/${appId}.desktop" \
+      --replace-warn 'Exec=hop-desktop' 'Exec=${appId}' \
+      --replace-warn 'Icon=hop-desktop' 'Icon=${appId}' \
+      --replace-warn 'StartupWMClass=hop-desktop' 'StartupWMClass=${appId}'
+
+    for size in 32x32 128x128 256x256 512x512; do
+      mv "$out/share/icons/hicolor/$size/apps/hop-desktop.png" \
+        "$out/share/icons/hicolor/$size/apps/${appId}.png"
+    done
   '';
 
   postPatch = ''
@@ -106,7 +118,7 @@ rustPlatform.buildRustPackage {
     description = "Open desktop editor for HWP and HWPX documents";
     homepage = "https://github.com/golbin/hop";
     license = lib.licenses.mit;
-    mainProgram = "hop-desktop";
+    mainProgram = appId;
     platforms = lib.platforms.linux;
   };
 }
