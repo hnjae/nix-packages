@@ -33,7 +33,7 @@
 }:
 let
   appId = "com.anthropic.Claude";
-  version = "1.37937.3";
+  version = "1.40609.0";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "claude-desktop";
@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://downloads.claude.ai/claude-desktop/apt/stable/pool/main/c/claude-desktop/claude-desktop_${version}_amd64.deb";
-    hash = "sha256-U1kMVyX7NIcpn5QPW4nVUYKw+u4Uyhvz41utrg9hE18=";
+    hash = "sha256-qW6W/4601Nf/p4Wrp/wj+GhLEqyD7S70Bg8PCfQXepg=";
   };
 
   nativeBuildInputs = [
