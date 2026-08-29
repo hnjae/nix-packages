@@ -8,11 +8,11 @@
 }:
 appimageTools.wrapType2 rec {
   pname = "lobehub-desktop";
-  version = "2.2.14";
+  version = "2.2.15";
 
   src = fetchurl {
     url = "https://github.com/lobehub/lobehub/releases/download/v${version}/LobeHub-${version}.AppImage";
-    hash = "sha256-aIeQa2I9OcBrOo2Dwuxeq+DQE/xmabw1/fXu1DgFq24=";
+    hash = "sha256-vRuuEc8wYuS12FkbNOGkUSdKetQpw2gwLm9kAjH02PQ=";
   };
 
   nativeBuildInputs = [
