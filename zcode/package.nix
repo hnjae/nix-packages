@@ -145,7 +145,8 @@ stdenv.mkDerivation (finalAttrs: {
     fi
 
     substituteInPlace "$desktopFile" \
-      --replace-warn 'Exec=/opt/ZCode/zcode %U' 'Exec=${appId} %U'
+      --replace-warn 'Exec=/opt/ZCode/zcode %U' 'Exec=${appId} %U' \
+      --replace-warn 'StartupWMClass=ZCode' 'StartupWMClass=${appId}'
 
     runHook postInstall
   '';
