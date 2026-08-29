@@ -20,12 +20,13 @@
 
 ## GUI Application Packaging
 
+- Target Wayland only: apps run as native Wayland through Ozone (`--ozone-platform-hint=auto` and the Wayland IME/text-input flags in the wrapper). X11 operation is not a goal; do not add X11-only workarounds or verify against X11.
 - Present one coherent identity per GUI app: binary name, desktop entry, icon name, `meta.mainProgram`, and the window class the app actually reports must all agree.
 - Derive the app id from upstream when one exists (Tauri `identifier`, electron-builder `appId`, the official `.desktop` name, Chromium `--class` conventions). When upstream declares none, keep the app's own identity instead of inventing one.
 - `StartupWMClass` must equal the window's real WM_CLASS res_class, or docks and launchers will not group or launch correctly. Point `Exec` at the canonical binary.
 - Renames must not relocate user data directories (`~/.config/<app>`): leave compile-time identifiers that drive data paths (e.g. a Tauri `identifier`) untouched.
 - Window classes are toolkit-specific: Chromium honors `--class`; Electron ignores it and derives the class from its own package.json (`desktopName` basename, else `productName`/`name`). Patching app internals to force a class (see `obsidian`) is a last resort.
-- Verify empirically: run the app under Xvfb and read `WM_CLASS` with `xwininfo`/`xprop`. Unset `WAYLAND_DISPLAY` so Ozone cannot escape to the user session, and give Chromium apps a temporary `--user-data-dir` so a running instance does not absorb the launch. `nix flake check` does not cover any of this.
+- Verify empirically on a real Wayland session: run the packaged app and confirm it starts and docks/launchers group it under the declared app id. Give Chromium apps a temporary `--user-data-dir` so a running instance does not absorb the launch. `nix flake check` does not cover any of this.
 - Use `--replace-warn` (not `--replace-fail`) when rewriting upstream desktop entries, so upstream formatting drift degrades into a warning instead of breaking updates.
 
 ## Testing Guidelines
