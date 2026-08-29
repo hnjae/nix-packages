@@ -27,23 +27,23 @@ let
     fetchSubmodules = true;
   };
 
-  frontend = stdenv.mkDerivation {
+  pnpmDeps = fetchPnpmDeps {
     pname = "hop-studio-host";
     inherit version src;
+    pnpm = pnpm_10;
+    fetcherVersion = 4;
+    hash = "sha256-QyRbMQwQD3cgkwHIr0K5kUSNHTshd70IZOVeCFVbW0A=";
+  };
+
+  frontend = stdenv.mkDerivation {
+    pname = "hop-studio-host";
+    inherit version src pnpmDeps;
 
     nativeBuildInputs = [
       nodejs
       pnpm_10
       pnpmConfigHook
     ];
-
-    pnpmDeps = fetchPnpmDeps {
-      pname = "hop-studio-host";
-      inherit version src;
-      pnpm = pnpm_10;
-      fetcherVersion = 4;
-      hash = "sha256-QyRbMQwQD3cgkwHIr0K5kUSNHTshd70IZOVeCFVbW0A=";
-    };
 
     buildPhase = ''
       runHook preBuild
@@ -95,8 +95,11 @@ rustPlatform.buildRustPackage {
     mv tauri.conf.json.tmp apps/desktop/src-tauri/tauri.conf.json
   '';
 
-  passthru.updateScript = nix-update-script {
-    extraArgs = [ "--flake" ];
+  passthru = {
+    inherit pnpmDeps;
+    updateScript = nix-update-script {
+      extraArgs = [ "--flake" ];
+    };
   };
 
   meta = {
