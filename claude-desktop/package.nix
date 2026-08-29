@@ -198,8 +198,8 @@ stdenv.mkDerivation (finalAttrs: {
     fi
 
     sed -i \
-      -e 's/version = "'"$currentVersion"'";/version = "'"$latestVersion"'";/' \
-      -e 's/hash = "'"$oldHash"'";/hash = "'"$newHash"'";/' \
+      -e 's|version = "'"$currentVersion"'";|version = "'"$latestVersion"'";|' \
+      -e 's|hash = "'"$oldHash"'";|hash = "'"$newHash"'";|' \
       "$packageFile"
 
     echo "updated claude-desktop: $currentVersion -> $latestVersion ($newHash)"
