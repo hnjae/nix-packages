@@ -1,74 +1,144 @@
 {
-  appimageTools,
+  alsa-lib,
+  at-spi2-atk,
+  at-spi2-core,
+  autoPatchelfHook,
+  cairo,
+  cups,
+  dbus,
+  dpkg,
+  expat,
   fetchurl,
+  gdk-pixbuf,
+  glib,
+  gtk3,
   imagemagick,
+  lib,
+  libdrm,
+  libnotify,
+  libsecret,
+  libuuid,
+  libxkbcommon,
   makeWrapper,
+  mesa,
   nix-update-script,
+  nspr,
+  nss,
+  pango,
+  stdenv,
+  udev,
+  xdg-utils,
+  libx11,
+  libxscrnsaver,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxtst,
+  libxrender,
+  libxcb,
   ...
 }:
 let
   appId = "com.lobehub.lobehub-desktop";
   version = "2.2.15";
 in
-appimageTools.wrapType2 rec {
+stdenv.mkDerivation {
   pname = "lobehub-desktop";
   inherit version;
 
   src = fetchurl {
-    url = "https://github.com/lobehub/lobehub/releases/download/v${version}/LobeHub-${version}.AppImage";
-    hash = "sha256-vRuuEc8wYuS12FkbNOGkUSdKetQpw2gwLm9kAjH02PQ=";
+    url = "https://github.com/lobehub/lobehub/releases/download/v${version}/lobehub-desktop_${version}_amd64.deb";
+    hash = "sha256-5wdnBFftwQcQRNIXe9iv225itJAfhi1xqLY4QjtiZC8=";
   };
 
   nativeBuildInputs = [
+    autoPatchelfHook
+    dpkg
     imagemagick
     makeWrapper
   ];
-  extraInstallCommands =
-    let
-      contents = appimageTools.extract {
-        inherit version src pname;
-      };
-    in
-    # bash
-    ''
-      mv "$out/bin/${pname}" "$out/bin/${appId}"
 
-      wrapProgram "$out/bin/${appId}" \
-        --add-flags "--no-sandbox" \
-        --add-flags "--enable-features=WaylandWindowDecorations" \
-        --add-flags "--enable-features=UseOzonePlatform" \
-        --add-flags "--ozone-platform-hint=auto" \
-        --add-flags "--enable-wayland-ime" \
-        --add-flags "--wayland-text-input-version=3"
+  buildInputs = [
+    alsa-lib
+    at-spi2-atk
+    at-spi2-core
+    cairo
+    cups
+    dbus
+    expat
+    gdk-pixbuf
+    glib
+    gtk3
+    libdrm
+    libnotify
+    libsecret
+    libuuid
+    libxkbcommon
+    mesa
+    nspr
+    nss
+    pango
+    udev
+    libx11
+    libxscrnsaver
+    libxcomposite
+    libxcursor
+    libxdamage
+    libxext
+    libxfixes
+    libxi
+    libxrandr
+    libxrender
+    libxtst
+    libxcb
+  ];
 
-      shopt -s nullglob
+  dontConfigure = true;
+  dontBuild = true;
+  dontStrip = true;
+  autoPatchelfIgnoreMissingDeps = [ "libc.musl-x86_64.so.1" ];
 
-      desktopFile=
-      for candidate in ${contents}/*.desktop ${contents}/usr/share/applications/*.desktop; do
-        if grep -Iq '^\[Desktop Entry\]' "$candidate"; then
-          desktopFile="$candidate"
-          break
-        fi
-      done
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb -x $src .
+    runHook postUnpack
+  '';
 
-      if [ -z "$desktopFile" ]; then
-        echo "ERR: No desktop entry found in extracted AppImage" >&2
-        exit 1
-      fi
+  installPhase = ''
+    runHook preInstall
 
-      install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
+    mkdir -p "$out/lib"
+    mv "opt/LobeHub" "$out/lib/lobehub-desktop"
 
-      substituteInPlace "$out/share/applications/${appId}.desktop" \
-        --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U' \
-        --replace-warn 'Icon=${pname}' 'Icon=${appId}' \
-        --replace-warn 'StartupWMClass=LobeHub' 'StartupWMClass=lobehub'
+    install -m 444 -D "usr/share/applications/lobehub-desktop.desktop" \
+      "$out/share/applications/${appId}.desktop"
 
-      iconDir="$out/share/icons/hicolor/512x512/apps"
-      mkdir -p "$iconDir"
-      magick "${contents}/usr/share/icons/hicolor/514x514/apps/${pname}.png" \
-        -resize 512x512 "$iconDir/${appId}.png"
-      chmod 444 "$iconDir/${appId}.png"
-    '';
+    substituteInPlace "$out/share/applications/${appId}.desktop" \
+      --replace-warn 'Exec=/opt/LobeHub/lobehub-desktop %U' 'Exec=${appId} %U' \
+      --replace-warn 'Icon=lobehub-desktop' 'Icon=${appId}' \
+      --replace-warn 'StartupWMClass=LobeHub' 'StartupWMClass=${appId}'
+
+    iconDir="$out/share/icons/hicolor/512x512/apps"
+    mkdir -p "$iconDir"
+    magick "usr/share/icons/hicolor/514x514/apps/lobehub-desktop.png" \
+      -resize 512x512 "$iconDir/${appId}.png"
+    chmod 444 "$iconDir/${appId}.png"
+
+    makeWrapper "$out/lib/lobehub-desktop/lobehub-desktop" "$out/bin/${appId}" \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils ]} \
+      --add-flags "--no-sandbox" \
+      --add-flags "--enable-features=WaylandWindowDecorations" \
+      --add-flags "--enable-features=UseOzonePlatform" \
+      --add-flags "--ozone-platform-hint=auto" \
+      --add-flags "--enable-wayland-ime" \
+      --add-flags "--wayland-text-input-version=3"
+
+    runHook postInstall
+  '';
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--flake" ];
