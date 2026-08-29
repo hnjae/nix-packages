@@ -1,73 +1,144 @@
 {
-  appimageTools,
+  alsa-lib,
+  at-spi2-atk,
+  at-spi2-core,
+  autoPatchelfHook,
+  cairo,
+  cups,
+  dbus,
+  dpkg,
+  expat,
   fetchurl,
+  gdk-pixbuf,
+  glib,
+  gtk3,
   lib,
+  libdrm,
+  libnotify,
+  libsecret,
+  libuuid,
+  libxkbcommon,
   makeWrapper,
+  mesa,
   nix-update-script,
+  nspr,
+  nss,
+  pango,
+  stdenv,
+  udev,
+  xdg-utils,
+  libx11,
+  libxscrnsaver,
+  libxcomposite,
+  libxcursor,
+  libxdamage,
+  libxext,
+  libxfixes,
+  libxi,
+  libxrandr,
+  libxrender,
+  libxtst,
+  libxcb,
   ...
 }:
 let
   appId = "ai.opencode.desktop";
-in
-appimageTools.wrapType2 rec {
-  pname = "opencode-desktop";
   version = "1.18.25";
+in
+stdenv.mkDerivation {
+  pname = "opencode-desktop";
+  inherit version;
 
   src = fetchurl {
-    url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-desktop-linux-x86_64.AppImage";
-    hash = "sha256-yLM+Vdf6Goq7+vAj6MCiMvM2gB0ghOIwxwqw0yg1VMo=";
+    url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-desktop-linux-amd64.deb";
+    hash = "sha256-MZGYF5p/NWuWK1Km4YKb2tKGg65UlJXrXYSmpuLYISs=";
   };
 
-  nativeBuildInputs = [ makeWrapper ];
-  extraInstallCommands =
-    let
-      contents = appimageTools.extract {
-        inherit version src pname;
-      };
-    in
-    # bash
-    ''
-      mv "$out/bin/${pname}" "$out/bin/${appId}"
+  nativeBuildInputs = [
+    autoPatchelfHook
+    dpkg
+    makeWrapper
+  ];
 
-      wrapProgram $out/bin/${appId} \
-        --add-flags "--no-sandbox" \
-        --add-flags "--class=${appId}" \
-        --add-flags "--enable-features=WaylandWindowDecorations" \
-        --add-flags "--enable-features=UseOzonePlatform" \
-        --add-flags "--ozone-platform-hint=auto" \
-        --add-flags "--enable-wayland-ime" \
-        --add-flags "--wayland-text-input-version=3"
+  buildInputs = [
+    alsa-lib
+    at-spi2-atk
+    at-spi2-core
+    cairo
+    cups
+    dbus
+    expat
+    gdk-pixbuf
+    glib
+    gtk3
+    libdrm
+    libnotify
+    libsecret
+    libuuid
+    libxkbcommon
+    mesa
+    nspr
+    nss
+    pango
+    udev
+    libx11
+    libxscrnsaver
+    libxcomposite
+    libxcursor
+    libxdamage
+    libxext
+    libxfixes
+    libxi
+    libxrandr
+    libxrender
+    libxtst
+    libxcb
+  ];
 
-      shopt -s nullglob
+  dontConfigure = true;
+  dontBuild = true;
+  dontStrip = true;
+  autoPatchelfIgnoreMissingDeps = [ "libc.musl-x86_64.so.1" ];
 
-      desktopFile=
-      for candidate in ${contents}/*.desktop ${contents}/usr/share/applications/*.desktop; do
-        if grep -Iq '^\[Desktop Entry\]' "$candidate"; then
-          desktopFile="$candidate"
-          break
-        fi
-      done
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb -x $src .
+    runHook postUnpack
+  '';
 
-      if [ -z "$desktopFile" ]; then
-        echo "ERR: No desktop entry found in extracted AppImage" >&2
-        exit 1
-      fi
+  installPhase = ''
+    runHook preInstall
 
-      install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
+    mkdir -p "$out/lib"
+    mv "opt/OpenCode" "$out/lib/opencode-desktop"
 
-      substituteInPlace "$out/share/applications/${appId}.desktop" \
-        --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U'
+    install -m 444 -D "usr/share/applications/${appId}.desktop" \
+      "$out/share/applications/${appId}.desktop"
 
-      for iconPath in ${contents}/usr/share/icons/hicolor/*x*/apps/*.png; do
-        size="$(basename -- "$(dirname -- "$(dirname -- "$iconPath")")")"
+    substituteInPlace "$out/share/applications/${appId}.desktop" \
+      --replace-warn 'Exec=/opt/OpenCode/${appId} %U' 'Exec=${appId} %U' \
+      --replace-warn 'NoDisplay=true' '''
 
-        case "$size" in
-          32x32|48x48|64x64|128x128|256x256)
-            install -m 444 -D "$iconPath" "$out/share/icons/hicolor/$size/apps/${appId}.png"
-            ;;
-        esac
-      done
-    '';
+    for iconPath in usr/share/icons/hicolor/*x*/apps/*.png; do
+      size="$(basename -- "$(dirname -- "$(dirname -- "$iconPath")")")"
+      install -m 444 -D "$iconPath" "$out/share/icons/hicolor/$size/apps/${appId}.png"
+    done
+
+    install -m 444 -D "usr/share/metainfo/${appId}.metainfo.xml" \
+      "$out/share/metainfo/${appId}.metainfo.xml"
+
+    makeWrapper "$out/lib/opencode-desktop/${appId}" "$out/bin/${appId}" \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils ]} \
+      --add-flags "--no-sandbox" \
+      --add-flags "--class=${appId}" \
+      --add-flags "--enable-features=WaylandWindowDecorations" \
+      --add-flags "--enable-features=UseOzonePlatform" \
+      --add-flags "--ozone-platform-hint=auto" \
+      --add-flags "--enable-wayland-ime" \
+      --add-flags "--wayland-text-input-version=3"
+
+    runHook postInstall
+  '';
 
   passthru.updateScript = nix-update-script {
     extraArgs = [ "--flake" ];
