@@ -12,8 +12,11 @@
   lib,
   ...
 }:
+let
+  appId = "Cider";
+in
 appimageTools.wrapType2 rec {
-  pname = "Cider";
+  pname = "cider";
   version = "3.1.8";
 
   src = requireFile {
@@ -33,7 +36,9 @@ appimageTools.wrapType2 rec {
       icon = "${contents}/Cider.png";
     in
     ''
-      wrapProgram $out/bin/${pname} \
+      mv "$out/bin/${pname}" "$out/bin/${appId}"
+
+      wrapProgram "$out/bin/${appId}" \
         --add-flags "--no-sandbox" \
         --add-flags "--disable-gpu-sandbox" \
         --add-flags "--enable-features=WaylandWindowDecorations" \
@@ -42,24 +47,24 @@ appimageTools.wrapType2 rec {
         --add-flags "--enable-wayland-ime" \
         --add-flags "--wayland-text-input-version=3"
 
-      install -m 444 -D ${contents}/Cider.desktop $out/share/applications/${pname}.desktop
+      install -m 444 -D ${contents}/Cider.desktop $out/share/applications/${appId}.desktop
 
-      substituteInPlace "$out/share/applications/${pname}.desktop" \
-        --replace-warn 'Icon=cider' 'Icon=${pname}'
+      substituteInPlace "$out/share/applications/${appId}.desktop" \
+        --replace-warn 'Icon=cider' 'Icon=${appId}'
 
-      substituteInPlace "$out/share/applications/${pname}.desktop" \
-        --replace-warn 'StartupWMClass=cider' 'StartupWMClass=${pname}'
+      substituteInPlace "$out/share/applications/${appId}.desktop" \
+        --replace-warn 'StartupWMClass=cider' 'StartupWMClass=${appId}'
 
       mkdir -p "$out/share/icons/hicolor/256x256/apps"
 
-      cp --reflink=auto "${icon}" "$out/share/icons/hicolor/256x256/apps/${pname}.png"
+      cp --reflink=auto "${icon}" "$out/share/icons/hicolor/256x256/apps/${appId}.png"
     '';
 
   meta = {
     description = "A cross-platform Apple Music experience built on Vue.js and written from the ground up with performance in mind";
     homepage = "https://cider.sh";
     license = lib.licenses.unfree;
-    mainProgram = pname;
+    mainProgram = appId;
     platforms = [ "x86_64-linux" ];
   };
 }
