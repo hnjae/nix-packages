@@ -11,6 +11,12 @@
 
     # dev tools
     dpkg
+
+    # X tools
+    xeyes
+    xprop
+    xvfb
+    xwininfo
   ];
 
   languages.nix.enable = true;
