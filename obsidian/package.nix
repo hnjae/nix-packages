@@ -1,147 +1,65 @@
 {
-  appimageTools,
+  obsidian,
   fetchurl,
   lib,
-  makeWrapper,
+  makeDesktopItem,
   nix-update-script,
-  nodejs,
   ...
 }:
 let
   appId = "md.obsidian.Obsidian";
+
+  # Pinned on top of the nixpkgs derivation until nixpkgs stable catches up.
   version = "1.13.7";
-  appImage = fetchurl {
-    url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
-    hash = "sha256-4NjgphFiTejJx9zYqeZIJ5+woNVS+qExK35POl+nJmM=";
+  usePin = lib.versionOlder obsidian.version version;
+
+  src = fetchurl {
+    url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}.tar.gz";
+    hash = "sha256-08vjdcv6QCTbGRC5gZFkn0E0xcSK7l5gtudxOYfc2yg=";
+  };
+
+  desktopItem = makeDesktopItem {
+    name = appId;
+    desktopName = "Obsidian";
+    comment = "Knowledge base";
+    exec = "${appId} %U";
+    icon = appId;
+    startupWMClass = appId;
+    categories = [ "Office" ];
+    mimeTypes = [ "x-scheme-handler/obsidian" ];
   };
 in
-appimageTools.wrapAppImage rec {
-  pname = "obsidian";
-  inherit version;
-
-  src = appimageTools.extract {
-    inherit pname version;
-    src = appImage;
-    postExtract = ''
-      ${nodejs}/bin/node <<'EOF'
-      const crypto = require("crypto");
-      const fs = require("fs");
-
-      const asarPath = process.env.out + "/resources/app.asar";
-      const appId = "${appId}";
-      const archive = fs.readFileSync(asarPath);
-      const headerSize = archive.readUInt32LE(4);
-      const jsonSize = archive.readUInt32LE(12);
-      const headerStart = 16;
-      const header = JSON.parse(archive.subarray(headerStart, headerStart + jsonSize).toString());
-      const packageFile = header.files["package.json"];
-      const dataStart = 8 + headerSize;
-      const packageStart = dataStart + Number(packageFile.offset);
-      const packageEnd = packageStart + packageFile.size;
-
-      if (packageEnd !== archive.length) {
-        throw new Error("Cannot patch app.asar: package.json is not the last file");
-      }
-
-      const packageJson = JSON.parse(archive.subarray(packageStart, packageEnd).toString());
-      packageJson.desktopName = appId + ".desktop";
-
-      const packageData = Buffer.from(JSON.stringify(packageJson, null, "\t") + "\n");
-      const packageHash = crypto.createHash("sha256").update(packageData).digest("hex");
-      packageFile.size = packageData.length;
-      packageFile.integrity = {
-        algorithm: "SHA256",
-        hash: packageHash,
-        blockSize: 4194304,
-        blocks: [packageHash],
+(obsidian.override {
+  commandLineArgs = "--enable-features=WaylandWindowDecorations --ozone-platform-hint=auto --enable-wayland-ime --wayland-text-input-version=3";
+}).overrideAttrs
+  (
+    old:
+    {
+      passthru = (old.passthru or { }) // {
+        updateScript = if usePin then nix-update-script { extraArgs = [ "--flake" ]; } else null;
       };
 
-      const headerData = Buffer.from(JSON.stringify(header));
-      if (headerData.length > jsonSize) {
-        throw new Error("Cannot patch app.asar: updated header is larger than the original header");
-      }
+      postInstall = (old.postInstall or "") + ''
+        mv $out/bin/obsidian $out/bin/${appId}
 
-      fs.writeFileSync(
-        asarPath,
-        Buffer.concat([
-          archive.subarray(0, headerStart),
-          headerData,
-          Buffer.alloc(jsonSize - headerData.length, 0x20),
-          archive.subarray(headerStart + jsonSize, packageStart),
-          packageData,
-        ])
-      );
-      EOF
-    '';
-  };
+        wrapProgram $out/bin/${appId} \
+          --set LC_ALL en_IE.UTF-8
 
-  nativeBuildInputs = [ makeWrapper ];
-  extraInstallCommands = ''
-    mv "$out/bin/${pname}" "$out/bin/${appId}"
+        rm -f $out/share/applications/obsidian.desktop
+        install -m 444 -D "${desktopItem}/share/applications/${appId}.desktop" \
+          "$out/share/applications/${appId}.desktop"
 
-    wrapProgram $out/bin/${appId} \
-      --set LC_ALL en_IE.UTF-8 \
-      --add-flags "--no-sandbox" \
-      --add-flags "--enable-features=WaylandWindowDecorations" \
-      --add-flags "--enable-features=UseOzonePlatform" \
-      --add-flags "--ozone-platform-hint=auto" \
-      --add-flags "--enable-wayland-ime" \
-      --add-flags "--wayland-text-input-version=3"
+        for icon in $out/share/icons/hicolor/*x*/apps/obsidian.png; do
+          mv "$icon" "$(dirname "$icon")/${appId}.png"
+        done
+      '';
 
-
-    shopt -s nullglob
-
-    desktopFile=
-    for candidate in ${src}/*.desktop ${src}/usr/share/applications/*.desktop; do
-      if grep -Iq '^\[Desktop Entry\]' "$candidate"; then
-        desktopFile="$candidate"
-        break
-      fi
-    done
-
-    if [ -z "$desktopFile" ]; then
-      echo "ERR: No desktop entry found in extracted AppImage" >&2
-      exit 1
-    fi
-
-    install -m 444 -D "$desktopFile" "$out/share/applications/${appId}.desktop"
-
-    substituteInPlace "$out/share/applications/${appId}.desktop" \
-      --replace-warn 'Exec=AppRun --no-sandbox %U' 'Exec=${appId} %U' \
-      --replace-warn 'Icon=obsidian' 'Icon=${appId}' \
-      --replace-warn 'StartupWMClass=obsidian' 'StartupWMClass=${appId}'
-
-    ${lib.concatMapStrings
-      (size: ''
-        mkdir -p "$out/share/icons/hicolor/${size}x${size}/apps"
-        cp --reflink=auto "${src}/usr/share/icons/hicolor/${size}x${size}/apps/obsidian.png" \
-          "$out/share/icons/hicolor/${size}x${size}/apps/${appId}.png"
-      '')
-      [
-        "16"
-        "24"
-        "32"
-        "48"
-        "64"
-        "128"
-        "256"
-        "512"
-      ]
+      meta = (old.meta or { }) // {
+        mainProgram = appId;
+        platforms = [ "x86_64-linux" ];
+      };
     }
-  '';
-
-  passthru = {
-    src = appImage;
-    updateScript = nix-update-script {
-      extraArgs = [ "--flake" ];
-    };
-  };
-
-  meta = {
-    description = "A powerful knowledge base that works on top of a local folder of plain text Markdown files";
-    homepage = "https://obsidian.md";
-    license = lib.licenses.obsidian;
-    mainProgram = appId;
-    platforms = [ "x86_64-linux" ];
-  };
-}
+    // lib.optionalAttrs usePin {
+      inherit version src;
+    }
+  )
