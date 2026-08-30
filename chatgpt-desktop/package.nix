@@ -32,7 +32,7 @@
   xdg-utils,
 }:
 let
-  appId = "chatgpt";
+  appId = "com.openai.ChatGPT";
   pname = "chatgpt-desktop";
   version = "26.825.41651";
 
