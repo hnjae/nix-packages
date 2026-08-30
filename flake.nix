@@ -17,6 +17,7 @@
 
       packageFiles = {
         brave = ./brave/package.nix;
+        chatgpt-desktop = ./chatgpt-desktop/package.nix;
         cider = ./cider/package.nix;
         claude-desktop = ./claude-desktop/package.nix;
         comment-checker = ./comment-checker/package.nix;
