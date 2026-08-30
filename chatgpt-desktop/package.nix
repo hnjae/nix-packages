@@ -34,16 +34,16 @@
 let
   appId = "com.openai.ChatGPT";
   pname = "chatgpt-desktop";
-  version = "26.825.41651";
+  version = "26.825.51511";
 
   sources = {
     amd64 = {
       url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${version}_amd64.deb";
-      hash = "sha256-IbIulcDEOj8RTz7TJpKr7cY49AV6CPmMmINuLT6aZx4=";
+      hash = "sha256-NVSwAixs+1EzJvQ/0R9xiDWncIasTXyi/z67ui1Mf0U=";
     };
     arm64 = {
       url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${version}_arm64.deb";
-      hash = "sha256-6ejKtG2j8PNFpd9Kn4iXeM5+LEgCzhzm1c662Uk7rrU=";
+      hash = "sha256-El42Ui1Dx1vXlYR3hGumsc3fLrGc78tX3agL4XQvkX8=";
     };
   };
 
@@ -154,26 +154,6 @@ stdenv.mkDerivation (finalAttrs: {
     attr="''${1:-''${UPDATE_NIX_ATTR_PATH:-chatgpt-desktop}}"
     packageFile="./$attr/package.nix"
 
-    case "$(uname -m)" in
-      x86_64) debArch="amd64" ;;
-      aarch64) debArch="arm64" ;;
-      *) echo "ERR: unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-    esac
-
-    index="$(
-      curl -fsSL https://persistent.oaistatic.com/codex-app-prod/linux/deb/dists/stable/main/binary-''${debArch}/Packages
-    )"
-
-    latestVersion="$(
-      printf '%s\n' "$index" \
-        | awk 'BEGIN { RS = ""; FS = "\n" } /(^|\n)Architecture: '"$debArch"'(\n|$)/ { for (i = 1; i <= NF; i++) if ($i ~ /^Version:/) { sub(/^Version: /, "", $i); print $i } }' \
-        | sort -V | tail -n 1
-    )"
-    if [ -z "$latestVersion" ]; then
-      echo "ERR: no version found in apt package index" >&2
-      exit 1
-    fi
-
     currentVersion="$(
       sed -n 's/^  version = "\([^"]*\)";$/\1/p' "$packageFile" | head -n 1
     )"
@@ -182,6 +162,41 @@ stdenv.mkDerivation (finalAttrs: {
       exit 1
     fi
 
+    latestVersion=""
+    declare -A sourceSha256s=()
+    for debArch in amd64 arm64; do
+      index="$(
+        curl -fsSL https://persistent.oaistatic.com/codex-app-prod/linux/deb/dists/stable/main/binary-''${debArch}/Packages
+      )"
+
+      archLatestVersion="$(
+        printf '%s\n' "$index" \
+          | awk 'BEGIN { RS = ""; FS = "\n" } /(^|\n)Architecture: '"$debArch"'(\n|$)/ { for (i = 1; i <= NF; i++) if ($i ~ /^Version:/) { sub(/^Version: /, "", $i); print $i } }' \
+          | sort -V | tail -n 1
+      )"
+      if [ -z "$archLatestVersion" ]; then
+        echo "ERR: no version found in $debArch apt package index" >&2
+        exit 1
+      fi
+
+      if [ -z "$latestVersion" ]; then
+        latestVersion="$archLatestVersion"
+      elif [ "$latestVersion" != "$archLatestVersion" ]; then
+        echo "ERR: version mismatch between architectures: $latestVersion != $archLatestVersion ($debArch)" >&2
+        exit 1
+      fi
+
+      sourceSha256="$(
+        printf '%s\n' "$index" \
+          | awk -v arch="$debArch" 'BEGIN { RS = ""; FS = "\n" } { hit = 0; for (i = 1; i <= NF; i++) { if ($i ~ "^Filename: pool/main/c/chatgpt/chatgpt_[^/]*_" arch ".deb$") hit = 1; else if ($i ~ /^SHA256:/ && hit) { sub(/^SHA256: /, "", $i); print $i } } }'
+      )"
+      if [ -z "$sourceSha256" ]; then
+        echo "ERR: no SHA256 found in $debArch apt package index for $archLatestVersion" >&2
+        exit 1
+      fi
+      sourceSha256s["$debArch"]="$sourceSha256"
+    done
+
     echo "chatgpt-desktop: current=$currentVersion latest=$latestVersion"
 
     if [ "$currentVersion" = "$latestVersion" ]; then
@@ -189,43 +204,36 @@ stdenv.mkDerivation (finalAttrs: {
       exit 0
     fi
 
-    sourceSha256="$(
-      printf '%s\n' "$index" \
-        | awk -v arch="$debArch" 'BEGIN { RS = ""; FS = "\n" } { hit = 0; for (i = 1; i <= NF; i++) { if ($i ~ "^Filename: pool/main/c/chatgpt/chatgpt_[^/]*_" arch ".deb$") hit = 1; else if ($i ~ /^SHA256:/ && hit) { sub(/^SHA256: /, "", $i); print $i } } }'
-    )"
-    if [ -z "$sourceSha256" ]; then
-      echo "ERR: no SHA256 found in apt package index for $latestVersion" >&2
-      exit 1
-    fi
-
-    newHash="$(nix hash convert --hash-algo sha256 --to sri "$sourceSha256")"
-    if [ -z "$newHash" ] || [ "$newHash" = "null" ]; then
-      echo "ERR: failed to convert hash for $latestVersion" >&2
-      exit 1
-    fi
-
-    oldHash="$(sed -n "/^    ''${debArch} = {/,/};/s/^      hash = \"\(sha256-[^\"]*\)\";$/\1/p" "$packageFile")"
-    if [ -z "$oldHash" ]; then
-      echo "ERR: could not read current hash for $debArch from $packageFile" >&2
-      exit 1
-    fi
-
     if [ "$(grep -c 'version = "'"$currentVersion"'";' "$packageFile")" -ne 1 ]; then
       echo "ERR: expected exactly one version assignment in $packageFile" >&2
       exit 1
     fi
 
-    if [ "$(grep -c 'hash = "'"$oldHash"'";' "$packageFile")" -ne 1 ]; then
-      echo "ERR: expected exactly one hash assignment for $debArch in $packageFile" >&2
-      exit 1
-    fi
+    sed -i 's|version = "'"$currentVersion"'";|version = "'"$latestVersion"'";|' "$packageFile"
 
-    sed -i \
-      -e 's|version = "'"$currentVersion"'";|version = "'"$latestVersion"'";|' \
-      -e 's|hash = "'"$oldHash"'";|hash = "'"$newHash"'";|' \
-      "$packageFile"
+    for debArch in amd64 arm64; do
+      newHash="$(nix hash convert --hash-algo sha256 --to sri "''${sourceSha256s[$debArch]}")"
+      if [ -z "$newHash" ] || [ "$newHash" = "null" ]; then
+        echo "ERR: failed to convert hash for $debArch $latestVersion" >&2
+        exit 1
+      fi
 
-    echo "updated chatgpt-desktop ($debArch): $currentVersion -> $latestVersion ($newHash)"
+      oldHash="$(sed -n "/^    ''${debArch} = {/,/};/s/^      hash = \"\(sha256-[^\"]*\)\";$/\1/p" "$packageFile")"
+      if [ -z "$oldHash" ]; then
+        echo "ERR: could not read current hash for $debArch from $packageFile" >&2
+        exit 1
+      fi
+
+      if [ "$(grep -c 'hash = "'"$oldHash"'";' "$packageFile")" -ne 1 ]; then
+        echo "ERR: expected exactly one hash assignment for $debArch in $packageFile" >&2
+        exit 1
+      fi
+
+      sed -i 's|hash = "'"$oldHash"'";|hash = "'"$newHash"'";|' "$packageFile"
+      echo "updated chatgpt-desktop ($debArch) hash: $oldHash -> $newHash"
+    done
+
+    echo "updated chatgpt-desktop: $currentVersion -> $latestVersion"
   '';
 
   meta = {
