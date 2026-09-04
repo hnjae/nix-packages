@@ -38,16 +38,16 @@
 }:
 let
   appId = "zcode";
-  version = "3.10.2";
+  version = "3.11.2";
 
   sources = {
     "x86_64-linux" = {
       arch = "x64";
-      hash = "sha256-thjPpwyPfIoabilQVlzEQcKYuAG7I4nCkusNOt1r8MA=";
+      hash = "sha256-fRO4OGMTAs9h4bgEDLZ/NJ7CNWZ5WJfxdGQyxcXXfVs=";
     };
     "aarch64-linux" = {
       arch = "arm64";
-      hash = "sha256-/NV9LuQedk1/4XFhLbUuj8fSMTUyjeSEpQksJfnBfzI=";
+      hash = "sha256-3jFIe5eq3hNlvb8cOhYkM2zRY9uJlkFqT4lG9JHu7bA=";
     };
   };
 
