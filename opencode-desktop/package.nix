@@ -43,7 +43,7 @@
 }:
 let
   appId = "ai.opencode.desktop";
-  version = "1.18.25";
+  version = "1.18.28";
 in
 stdenv.mkDerivation {
   pname = "opencode-desktop";
@@ -51,7 +51,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-desktop-linux-amd64.deb";
-    hash = "sha256-MZGYF5p/NWuWK1Km4YKb2tKGg65UlJXrXYSmpuLYISs=";
+    hash = "sha256-C0O/FpJQZvxFrVAk+cHg5Ln2lBvZXOLCigs28D191EA=";
   };
 
   nativeBuildInputs = [
