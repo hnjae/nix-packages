@@ -64,6 +64,8 @@ jobs:
           NIXPKGS_ALLOW_UNFREE: "1"
           PACKAGE: ${{ matrix.package }}
         run: |
+          set -o pipefail
+
           nixpkgs_path="$(
             nix eval --impure --raw --expr \
               '(builtins.getFlake (toString ./.)).inputs.nixpkgs.outPath'
