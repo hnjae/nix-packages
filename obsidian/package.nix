@@ -1,9 +1,12 @@
 {
   obsidian,
   fetchurl,
+  gh,
+  jq,
   lib,
   makeDesktopItem,
-  nix-update-script,
+  nix-update,
+  writeShellApplication,
   ...
 }:
 let
@@ -16,6 +19,37 @@ let
   src = fetchurl {
     url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/obsidian-${version}.tar.gz";
     hash = "sha256-08vjdcv6QCTbGRC5gZFkn0E0xcSK7l5gtudxOYfc2yg=";
+  };
+
+  # GitHub "latest" on obsidianmd/obsidian-releases can be a mobile-only
+  # release (apk assets only, desktop assets absent), so the desktop channel
+  # must be resolved by asset presence, matching obsidian.md's download page.
+  updateScript = writeShellApplication {
+    name = "obsidian-update-script";
+    runtimeInputs = [
+      gh
+      jq
+      nix-update
+    ];
+    text = ''
+      attr="''${1:-$UPDATE_NIX_ATTR_PATH}"
+
+      # shellcheck disable=SC2016
+      desktop_version="$(
+        gh api --paginate --slurp repos/obsidianmd/obsidian-releases/releases | jq -r '
+          [.[][]
+            | select(.draft == false)
+            | select(
+              . as $release
+              | $release.assets
+              | any(.name == "obsidian-" + ($release.tag_name | ltrimstr("v")) + ".tar.gz")
+            )]
+          | first | .tag_name | ltrimstr("v")
+        '
+      )"
+
+      exec nix-update --flake --version "$desktop_version" "$attr"
+    '';
   };
 
   desktopItem = makeDesktopItem {
@@ -36,7 +70,7 @@ in
     old:
     {
       passthru = (old.passthru or { }) // {
-        updateScript = if usePin then nix-update-script { extraArgs = [ "--flake" ]; } else null;
+        updateScript = if usePin then updateScript else null;
       };
 
       postInstall = (old.postInstall or "") + ''
