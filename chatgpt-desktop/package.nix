@@ -34,16 +34,16 @@
 let
   appId = "com.openai.ChatGPT";
   pname = "chatgpt-desktop";
-  version = "26.901.31953";
+  version = "26.901.51231";
 
   sources = {
     amd64 = {
       url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${version}_amd64.deb";
-      hash = "sha256-K7RSK+h33mwX5fTAcbBuxkiCsd0JqPC9IErwI6t1bZw=";
+      hash = "sha256-YlgBiNh8PTqTadq3xztCqKMlGNTfii1brmRm3erFwF4=";
     };
     arm64 = {
       url = "https://persistent.oaistatic.com/codex-app-prod/linux/deb/pool/main/c/chatgpt/chatgpt_${version}_arm64.deb";
-      hash = "sha256-DNwkbud4lgaPBTdUwpXKE4JdAhAGj3Rq/ZZcL4THSXQ=";
+      hash = "sha256-AqL1xstpUJxiq8vdE8drE5zbLKnt3nU3I53d4CQHfqA=";
     };
   };
 
