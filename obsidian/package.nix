@@ -79,6 +79,7 @@ in
 
       postInstall = (old.postInstall or "") + ''
         mv $out/bin/obsidian $out/bin/${appId}
+        ln -s obsidian-cli $out/bin/obsidian
 
         wrapProgram $out/bin/${appId} \
           --set LC_ALL en_IE.UTF-8
