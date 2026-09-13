@@ -22,7 +22,6 @@
         claude-desktop = ./claude-desktop/package.nix;
         comment-checker = ./comment-checker/package.nix;
         hop = ./hop/package.nix;
-        kdecodexbar = ./kdecodexbar/package.nix;
         libheif = ./libheif/package.nix;
         lobehub-desktop = ./lobehub-desktop/package.nix;
         obsidian = ./obsidian/package.nix;
