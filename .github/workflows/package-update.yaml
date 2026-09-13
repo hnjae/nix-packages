@@ -84,9 +84,12 @@ jobs:
             "$PACKAGE" 2>&1 | tee "$update_log"; then
             git checkout -- "$PACKAGE" || true
 
+            # `|| true`: the run step executes under `bash -e` and, combined
+            # with `set -o pipefail` above, an unmatched grep would otherwise
+            # abort the step before the skip summary is written.
             failed_reason="$(
-              grep -E 'nix_update\.errors\.[A-Za-z]+:|^error:|cannot download' "$update_log" \
-                | sed 's/\r$//' | tail -3 | tr '\n' '; '
+              grep -E '[[:space:]]*error:|nix_update\.errors\.[A-Za-z]+:|cannot download' "$update_log" \
+                | sed 's/\r$//' | tail -3 | tr '\n' '; ' || true
             )"
             [ -n "$failed_reason" ] \
               || failed_reason="updater exited with an unexpected error, see the step log"
