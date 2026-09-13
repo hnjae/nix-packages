@@ -13,6 +13,7 @@
   glib,
   gtk3,
   imagemagick,
+  leptonica,
   lib,
   libdrm,
   libnotify,
@@ -25,7 +26,9 @@
   nspr,
   nss,
   pango,
+  pipewire,
   stdenv,
+  tesseract,
   udev,
   xdg-utils,
   libx11,
@@ -73,6 +76,7 @@ stdenv.mkDerivation {
     gdk-pixbuf
     glib
     gtk3
+    leptonica
     libdrm
     libnotify
     libsecret
@@ -82,6 +86,8 @@ stdenv.mkDerivation {
     nspr
     nss
     pango
+    pipewire
+    tesseract
     udev
     libx11
     libxscrnsaver
@@ -113,6 +119,12 @@ stdenv.mkDerivation {
 
     mkdir -p "$out/lib"
     mv "opt/LobeHub" "$out/lib/lobehub-desktop"
+
+    # Upstream builds the vendored `resources/bin/auv` helper against the
+    # pre-1.87 leptonica soname; leptonica's three symbols it actually
+    # imports exist in the current ABI, so expose it under the old name.
+    ln -s "${leptonica}/lib/libleptonica.so.6" \
+      "$out/lib/lobehub-desktop/resources/bin/liblept.so.5"
 
     install -m 444 -D "usr/share/applications/lobehub-desktop.desktop" \
       "$out/share/applications/${appId}.desktop"

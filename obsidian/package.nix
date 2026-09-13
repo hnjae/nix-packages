@@ -24,7 +24,7 @@ let
   # GitHub "latest" on obsidianmd/obsidian-releases can be a mobile-only
   # release (apk assets only, desktop assets absent), so the desktop channel
   # must be resolved by asset presence, matching obsidian.md's download page.
-  updateScript = writeShellApplication {
+  updateScriptInner = writeShellApplication {
     name = "obsidian-update-script";
     runtimeInputs = [
       gh
@@ -52,6 +52,10 @@ let
     '';
   };
 
+  # nix-update runs `toString updateScript`, which is the output directory of
+  # writeShellApplication, not the executable inside it; point it at the file.
+  updateScriptPath = "${updateScriptInner}/bin/obsidian-update-script";
+
   desktopItem = makeDesktopItem {
     name = appId;
     desktopName = "Obsidian";
@@ -70,7 +74,7 @@ in
     old:
     {
       passthru = (old.passthru or { }) // {
-        updateScript = if usePin then updateScript else null;
+        updateScript = if usePin then updateScriptPath else null;
       };
 
       postInstall = (old.postInstall or "") + ''
