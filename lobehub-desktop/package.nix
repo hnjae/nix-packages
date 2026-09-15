@@ -47,7 +47,7 @@
 }:
 let
   appId = "com.lobehub.lobehub-desktop";
-  version = "2.2.16";
+  version = "2.2.17";
 in
 stdenv.mkDerivation {
   pname = "lobehub-desktop";
@@ -55,7 +55,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://github.com/lobehub/lobehub/releases/download/v${version}/lobehub-desktop_${version}_amd64.deb";
-    hash = "sha256-QZrFxfrL4CuT61jXd6v8iGQsSp4v7KwSUU+DlCEieG0=";
+    hash = "sha256-ZRfIc+Z0Pgi1NQPxtM11DowcpDqnJ+fDncNIaedQEP8=";
   };
 
   nativeBuildInputs = [
