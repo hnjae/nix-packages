@@ -20,6 +20,8 @@
         chatgpt-desktop = ./chatgpt-desktop/package.nix;
         cider = ./cider/package.nix;
         claude-desktop = ./claude-desktop/package.nix;
+        codexbar-cli = ./codexbar-cli/package.nix;
+        codexbar-plasmoid = ./codexbar-plasmoid/package.nix;
         hop = ./hop/package.nix;
         libheif = ./libheif/package.nix;
         lobehub-desktop = ./lobehub-desktop/package.nix;
