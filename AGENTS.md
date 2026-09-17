@@ -28,6 +28,7 @@
 - Window classes are toolkit-specific: Chromium honors `--class`; Electron ignores it and derives the class from its own package.json (`desktopName` basename, else `productName`/`name`). Patching app internals to force a class (see `obsidian`) is a last resort.
 - Verify empirically on a real Wayland session: run the packaged app and confirm it starts and docks/launchers group it under the declared app id. Give Chromium apps a temporary `--user-data-dir` so a running instance does not absorb the launch. `nix flake check` does not cover any of this.
 - Use `--replace-warn` (not `--replace-fail`) when rewriting upstream desktop entries, so upstream formatting drift degrades into a warning instead of breaking updates.
+- Author desktop entries from scratch with `makeDesktopItem`, installed via the `desktopItems` attribute and the `copyDesktopItems` hook, instead of hand-written heredocs: it renders spec-valid keys and runs `desktop-file-validate` at build time. The `--replace-warn` rule above still governs rewriting upstream entries.
 
 ## Testing Guidelines
 
