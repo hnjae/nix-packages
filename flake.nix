@@ -21,6 +21,7 @@
         cider = ./cider/package.nix;
         claude-desktop = ./claude-desktop/package.nix;
         codexbar-cli = ./codexbar-cli/package.nix;
+        codexbar-desktop = ./codexbar-desktop/package.nix;
         codexbar-plasmoid = ./codexbar-plasmoid/package.nix;
         hop = ./hop/package.nix;
         libheif = ./libheif/package.nix;
