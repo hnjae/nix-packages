@@ -28,7 +28,6 @@
         lobehub-desktop = ./lobehub-desktop/package.nix;
         obsidian = ./obsidian/package.nix;
         opencode-desktop = ./opencode-desktop/package.nix;
-        zcode = ./zcode/package.nix;
       };
 
       packagesFor =
