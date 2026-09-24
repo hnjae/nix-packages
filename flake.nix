@@ -23,7 +23,6 @@
         codexbar-plasmoid = ./codexbar-plasmoid/package.nix;
         hop = ./hop/package.nix;
         libheif = ./libheif/package.nix;
-        lobehub-desktop = ./lobehub-desktop/package.nix;
         obsidian = ./obsidian/package.nix;
       };
 
