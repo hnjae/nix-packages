@@ -8,13 +8,13 @@
   stdenv,
 }:
 let
-  version = "0.64.1";
+  version = "0.66.0";
   appId = "com.steipete.CodexBar";
   src = fetchFromGitHub {
     owner = "steipete";
     repo = "CodexBar";
     tag = "v${version}";
-    hash = "sha256-9wSw/39wjS+n34jXePj+6kMSu6LdujzYLf3FXQEQQxo=";
+    hash = "sha256-CbgHRkNTASLtMBplAtq9V1XVKy/12N9sHIzmV9X8QHQ=";
   };
 
   # Mirrors the launcher upstream install.py writes. Exec resolves through
