@@ -166,6 +166,14 @@
             hop = ./hop/package.nix;
             libheif = ./libheif/package.nix;
             obsidian = ./obsidian/package.nix;
+            otf-interop = ./otf-interop/package.nix;
+            otf-kopub-world = ./otf-kopub-world/package.nix;
+            otf-plangothic = ./otf-plangothic/package.nix;
+            otf-ridibatang = ./otf-ridibatang/package.nix;
+            ttf-dmca-sans-serif = ./ttf-dmca-sans-serif/package.nix;
+            ttf-freesentation = ./ttf-freesentation/package.nix;
+            ttf-hcr = ./ttf-hcr/package.nix;
+            ttf-sarasa-fixed-k-nerd-font = ./ttf-sarasa-fixed-k-nerd-font/package.nix;
           };
 
           packages = lib.mapAttrs (_: packageFile: pkgs.callPackage packageFile { }) packageFiles;
