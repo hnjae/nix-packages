@@ -5,7 +5,7 @@
 - Root [`flake.nix`](./flake.nix) defines supported systems and exports available packages with `callPackage`.
 - Keep each package in its own directory, named after the exported package.
 - Package layout: `package/package.nix`
-- Shared dev setup lives in [`devenv.nix`](./devenv.nix). CI lives in [`.github/workflows/ci.yaml`](./.github/workflows/ci.yaml).
+- Shared development setup lives in [`flake.nix`](./flake.nix) and [`nix/partitions/dev/flake.nix`](./nix/partitions/dev/flake.nix). CI lives in [`.github/workflows/ci.yaml`](./.github/workflows/ci.yaml).
 
 ## Build, Test, and Development Commands
 

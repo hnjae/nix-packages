@@ -40,10 +40,6 @@ check: static-checks flake-check
 dispatch-flake-update:
     gh workflow run flake-update.yaml --ref main
 
-[group('ci')]
-dispatch-devenv-update:
-    gh workflow run devenv-update.yaml --ref main
-
 [group('nix')]
 flake-show:
     nix --no-warn-dirty flake show

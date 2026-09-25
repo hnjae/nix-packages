@@ -10,3 +10,13 @@
 ```sh
 NIXPKGS_ALLOW_UNFREE=1 nix profile add --impure 'git+ssh://git@github.com/hnjae/nix-packages#obsidian'
 ```
+
+## Development
+
+Enter the development shell and run the repository checks with:
+
+```sh
+nix develop
+prek run --hook-stage pre-commit --all-files
+nix flake check --impure --no-write-lock-file
+```

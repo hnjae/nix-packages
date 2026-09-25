@@ -23,12 +23,10 @@ jobs:
           extra-conf: |
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ github.token }}
-      - name: Install devenv
-        run: nix profile add nixpkgs#devenv
-      - name: Update flake.lock
-        run: nix flake update
-      - name: Update devenv.lock
-        run: devenv update
+      - name: Update lock files
+        run: |
+          nix flake update
+          nix flake update --flake ./nix/partitions/dev
       - name: Create PR
         id: cpr
         uses: peter-evans/create-pull-request@v8
@@ -43,7 +41,7 @@ jobs:
             Automated lock file update.
           add-paths: |
             flake.lock
-            devenv.lock
+            nix/partitions/dev/flake.lock
       - name: Enable auto-merge
         if: ${{ steps.cpr.outputs.pull-request-number }}
         env:
