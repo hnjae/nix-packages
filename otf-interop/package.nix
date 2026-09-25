@@ -1,6 +1,7 @@
 {
   fetchurl,
   lib,
+  nix-update-script,
   stdenvNoCC,
   unzip,
 }:
@@ -32,6 +33,9 @@ stdenvNoCC.mkDerivation {
     install -Dm644 ${licenseFile} $out/share/doc/otf-interop/LICENSE
     runHook postInstall
   '';
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "Interop font family combining Inter and Noto Sans KR";
