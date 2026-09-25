@@ -1,0 +1,11 @@
+[global]
+flavor = "standard"
+disable = [
+  "line-length",
+  "heading-increment",
+  "no-emphasis-as-heading",
+  "first-line-heading",
+]
+
+["ul-indent"]
+indent = 4
