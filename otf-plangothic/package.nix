@@ -2,15 +2,16 @@
   _7zz,
   fetchurl,
   lib,
+  nix-update-script,
   stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "otf-plangothic";
-  version = "2.9.5792";
+  version = "2.9.5795";
 
   src = fetchurl {
     url = "https://github.com/Fitzgerald-Porthmouth-Koenigsegg/Plangothic_Project/releases/download/V${version}/Plangothic-OTF-V${version}.7z";
-    hash = "sha256-3/TKm7tkLEys4e0lvyJEY71tzPGxl7zFqg+xXKxg53Y=";
+    hash = "sha256-WmyKlXygNIerhhV9xYgK+aTp8fobdLNpNIZAjZdf8fk=";
   };
 
   nativeBuildInputs = [ _7zz ];
@@ -27,6 +28,14 @@ stdenvNoCC.mkDerivation rec {
     install -m444 -Dt "$out/share/fonts/opentype" Plangothic.ttc
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--flake"
+      "--version-regex"
+      "V(.*)"
+    ];
+  };
 
   meta = {
     description = "OpenType collection based on Source Han Sans CN with supplementary CJKV ideographs";

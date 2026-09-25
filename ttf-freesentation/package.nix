@@ -1,6 +1,7 @@
 {
   fetchzip,
   lib,
+  nix-update-script,
   stdenvNoCC,
   unzip,
 }:
@@ -24,6 +25,10 @@ stdenvNoCC.mkDerivation rec {
     install -m444 -Dt "$out/share/fonts/truetype" Freesentation-*.ttf
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "Korean font family designed for presentations";

@@ -1,6 +1,7 @@
 {
   fetchzip,
   lib,
+  nix-update-script,
   stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
@@ -21,6 +22,10 @@ stdenvNoCC.mkDerivation {
     install -m444 -Dt "$out/share/fonts/truetype" DMCAsansserif-*.ttf
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "General purpose sans serif font metric-compatible with Microsoft Consolas";

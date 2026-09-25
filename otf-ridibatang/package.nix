@@ -1,6 +1,7 @@
 {
   fetchurl,
   lib,
+  nix-update-script,
   stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
@@ -21,6 +22,10 @@ stdenvNoCC.mkDerivation {
     install -Dm444 "$src" "$out/share/fonts/opentype/RIDIBatang.otf"
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "RIDI Batang font for readable long-form e-books";

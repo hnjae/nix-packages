@@ -1,5 +1,6 @@
 {
   lib,
+  nix-update-script,
   requireFile,
   stdenvNoCC,
   unzip,
@@ -24,6 +25,10 @@ stdenvNoCC.mkDerivation {
     install -m444 -Dt "$out/share/fonts/truetype" *.ttf
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "Hancom Office typeface family available for free use";

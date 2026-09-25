@@ -1,6 +1,7 @@
 {
   fetchzip,
   lib,
+  nix-update-script,
   stdenvNoCC,
 }:
 stdenvNoCC.mkDerivation {
@@ -21,6 +22,10 @@ stdenvNoCC.mkDerivation {
     install -m444 -Dt "$out/share/fonts/opentype" *.otf
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [ "--flake" ];
+  };
 
   meta = {
     description = "Digital screen-friendly Korean KoPub fonts";
