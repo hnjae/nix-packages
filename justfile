@@ -12,7 +12,7 @@ alias fmt := format
 
 [group('ci')]
 format:
-    prek run --hook-stage pre-commit --all-files
+    treefmt
 
 [group('ci')]
 lint-fix:
@@ -27,7 +27,6 @@ static-checks:
 
     typos
     rumdl check
-    editorconfig-checker
 
 [group('ci')]
 flake-check:

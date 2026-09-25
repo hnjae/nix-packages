@@ -36,7 +36,12 @@
             ];
 
             perSystem =
-              { config, pkgs, ... }:
+              {
+                config,
+                pkgs,
+                lib,
+                ...
+              }:
               {
                 treefmt = {
                   projectRootFile = "flake.nix";
@@ -94,36 +99,38 @@
 
                 pre-commit.settings.package = pkgs.prek;
                 pre-commit.settings.hooks = {
-                  treefmt.enable = true;
+                  cocogitto = {
+                    enable = true;
+                    name = "cog verify";
+                    description = "Lint commit messages with Cocogitto.";
+                    package = pkgs.cocogitto;
+                    entry = "${lib.getExe pkgs.cocogitto} verify --file";
+                    stages = [ "commit-msg" ];
+                  };
                   detect-private-keys.enable = true;
-                  actionlint.enable = true;
+                  treefmt.enable = true;
                   typos.enable = true;
                 };
 
                 devShells.default = pkgs.mkShellNoCC {
                   inputsFrom = [ config.treefmt.build.devShell ];
-                  packages = [
-                    pkgs.prek
+                  packages = lib.flatten [
                     pkgs.just
-                    pkgs.actionlint
-                    pkgs.editorconfig-checker
                     pkgs.statix
                     pkgs.deadnix
                     pkgs.vulnix
                     pkgs.nixd
-                    pkgs.typos
-                    pkgs.rumdl
                     pkgs.gh
                     pkgs.jq
                     pkgs.fzf
-                  ]
-                  ++ config.pre-commit.settings.enabledPackages
-                  ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-                    pkgs.dpkg
-                    pkgs.xeyes
-                    pkgs.xprop
-                    pkgs.xvfb
-                    pkgs.xwininfo
+                    config.pre-commit.settings.enabledPackages
+                    (pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+                      pkgs.dpkg
+                      pkgs.xeyes
+                      pkgs.xprop
+                      pkgs.xvfb
+                      pkgs.xwininfo
+                    ])
                   ];
                   shellHook = config.pre-commit.shellHook + ''
                     if [ ! -e treefmt.toml ] || [ -L treefmt.toml ]; then
