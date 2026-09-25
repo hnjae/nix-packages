@@ -166,6 +166,7 @@
             hop = ./hop/package.nix;
             libheif = ./libheif/package.nix;
             obsidian = ./obsidian/package.nix;
+            otf-interop = ./otf-interop/package.nix;
           };
 
           packages = lib.mapAttrs (_: packageFile: pkgs.callPackage packageFile { }) packageFiles;
