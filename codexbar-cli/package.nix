@@ -12,7 +12,7 @@
   which,
 }:
 let
-  version = "0.64.1";
+  version = "0.66.0";
 
   codexbar-cli-unwrapped = stdenv.mkDerivation {
     pname = "codexbar-cli-unwrapped";
@@ -24,7 +24,7 @@ let
         if stdenv.hostPlatform.isAarch64 then
           "sha256-oygcik7RgPY9axV77TMNKOS6bMn1riLHLK9PLAkRGwI="
         else
-          "sha256-S86hfbvU/aOyhI137Q2/oV30UrixhHL9/hUHpX/BQUw=";
+          "sha256-TcE/8C8thZ7qZe67kca6utQszQfF/wjO3vQuO755wMQ=";
     };
 
     # The archive has no top-level directory and the first entry is the
