@@ -5,7 +5,7 @@
   stdenv,
 }:
 let
-  version = "0.4.0";
+  version = "0.6.0";
   pluginId = "com.github.psimaker.codexbar";
 in
 stdenv.mkDerivation {
@@ -16,7 +16,7 @@ stdenv.mkDerivation {
     owner = "psimaker";
     repo = "codexbar-plasmoid";
     tag = "v${version}";
-    hash = "sha256-35bSqbA6diRAB7vBpmd5gDQzoh8Vae1iHqwdXR48qCA=";
+    hash = "sha256-jjy7wwQSNXvYJUfMjSX7TdJgq6xutY/ECg21swP5DqA=";
   };
 
   dontConfigure = true;
