@@ -9,7 +9,7 @@
   nix-update-script,
   openssl,
   pkg-config,
-  pnpm_10,
+  pnpm_10_latest,
   pnpmConfigHook,
   rustPlatform,
   stdenv,
@@ -31,7 +31,7 @@ let
   pnpmDeps = fetchPnpmDeps {
     pname = "hop-studio-host";
     inherit version src;
-    pnpm = pnpm_10;
+    pnpm = pnpm_10_latest;
     fetcherVersion = 4;
     hash = "sha256-QyRbMQwQD3cgkwHIr0K5kUSNHTshd70IZOVeCFVbW0A=";
   };
@@ -42,7 +42,7 @@ let
 
     nativeBuildInputs = [
       nodejs
-      pnpm_10
+      pnpm_10_latest
       pnpmConfigHook
     ];
 
