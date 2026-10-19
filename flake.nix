@@ -174,6 +174,7 @@
             ttf-freesentation = ./ttf-freesentation/package.nix;
             ttf-hcr = ./ttf-hcr/package.nix;
             ttf-monoplex-cjk = ./ttf-monoplex-cjk/package.nix;
+            ttf-monoplex-cjk-nerd-font = ./ttf-monoplex-cjk-nerd-font/package.nix;
             ttf-pretendard-gov-variable = ./ttf-pretendard-gov-variable/package.nix;
             ttf-sarasa-fixed-k-nerd-font = ./ttf-sarasa-fixed-k-nerd-font/package.nix;
           };
