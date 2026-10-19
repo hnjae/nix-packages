@@ -1,6 +1,7 @@
 {
   fetchurl,
   lib,
+  nix-update-script,
   stdenvNoCC,
   unzip,
 }:
@@ -24,6 +25,14 @@ stdenvNoCC.mkDerivation rec {
     install -Dm444 LICENSE.md "$out/share/doc/ttf-monoplex-cjk/LICENSE.md"
     runHook postInstall
   '';
+
+  passthru.updateScript = nix-update-script {
+    extraArgs = [
+      "--flake"
+      "--use-github-releases"
+      "--version-regex=^monoplex-cjk-([0-9.]+)$"
+    ];
+  };
 
   meta = {
     description = "Monoplex CJK programming font";

@@ -32,7 +32,12 @@ stdenvNoCC.mkDerivation {
   '';
 
   passthru.updateScript = nix-update-script {
-    extraArgs = [ "--flake" ];
+    extraArgs = [
+      "--flake"
+      "--url=https://github.com/orioncactus/pretendard"
+      "--use-github-releases"
+      "--version-regex=^v([0-9.]+)$"
+    ];
   };
 
   meta = {
