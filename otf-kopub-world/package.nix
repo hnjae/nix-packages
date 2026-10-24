@@ -6,11 +6,11 @@
 }:
 stdenvNoCC.mkDerivation {
   pname = "otf-kopub-world";
-  version = "2.0";
+  version = "2026";
 
   src = fetchzip {
-    url = "https://www.kopus.org/wp-content/uploads/2022/04/KOPUB2.0_OTF_FONTS.zip";
-    hash = "sha256-PInBRATZ4JSAN9I8a1WyLPXNsQi9LrmvSM8py1WTnBI=";
+    url = "https://www.kopus.org/wp-content/uploads/2026/04/KOPUBWORLD_OTF_FONTS2026.zip";
+    hash = "sha256-5IeEJSsH5FlvAIb0I+zn9Z3Ng6eIeqKIu+555jMc+D0=";
     stripRoot = false;
   };
 
@@ -28,8 +28,8 @@ stdenvNoCC.mkDerivation {
   };
 
   meta = {
-    description = "Digital screen-friendly Korean KoPub fonts";
-    homepage = "http://www.kopus.org/biz-electronic-font2/";
+    description = "Digital screen-friendly Korean KoPubWorld fonts";
+    homepage = "https://www.kopus.org/biz-electronic-font/";
     license = lib.licenses.unfree;
     platforms = lib.platforms.all;
   };
