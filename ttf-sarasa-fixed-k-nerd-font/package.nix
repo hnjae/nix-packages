@@ -6,11 +6,11 @@
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "ttf-sarasa-fixed-k-nerd-font";
-  version = "1.0.40-0";
+  version = "1.0.43-0";
 
   src = fetchzip {
     url = "https://github.com/jonz94/Sarasa-Gothic-Nerd-Fonts/releases/download/v${version}/sarasa-fixed-k-nerd-font.zip";
-    hash = "sha256-qY7gVL3SLrfANeOScKzgopslOYpMnTdvOLlQPW0Qg0I=";
+    hash = "sha256-XDxXqfapf3HikYC37IBBe/jbtPMx7R0ILHXYWGNkrgo=";
     stripRoot = false;
   };
 
