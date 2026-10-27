@@ -17,136 +17,11 @@
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ flake-parts.flakeModules.partitions ];
-
       systems = [
         "x86_64-linux"
         "aarch64-linux"
         "aarch64-darwin"
       ];
-
-      partitions.dev = {
-        extraInputsFlake = ./nix/partitions/dev;
-        module =
-          { inputs, ... }:
-          {
-            imports = [
-              inputs.git-hooks.flakeModule
-              inputs.treefmt-nix.flakeModule
-            ];
-
-            perSystem =
-              {
-                config,
-                pkgs,
-                lib,
-                ...
-              }:
-              {
-                treefmt = {
-                  projectRootFile = "flake.nix";
-                  programs = {
-                    nixfmt.enable = true;
-                    rumdl-format.enable = true;
-                    taplo.enable = true;
-                    yamlfmt.enable = true;
-                    just.enable = true;
-                  };
-
-                  settings.formatter.biome = {
-                    command = "${pkgs.biome}/bin/biome";
-                    options = [
-                      "check"
-                      "--write"
-                      "--no-errors-on-unmatched"
-                    ];
-                    includes = [
-                      "*.js"
-                      "*.mjs"
-                      "*.cjs"
-                      "*.jsx"
-                      "*.ts"
-                      "*.mts"
-                      "*.cts"
-                      "*.tsx"
-                      "*.json"
-                      "*.jsonc"
-                      "*.css"
-                    ];
-                  };
-
-                  settings.formatter.shell-fmt = {
-                    command = toString (
-                      pkgs.writeShellScript "shell-fmt" ''
-                        set -euo pipefail
-
-                        for file in "$@"; do
-                          ${pkgs.shellharden}/bin/shellharden --replace "$file"
-                          ${pkgs.shellcheck}/bin/shellcheck "$file"
-                          ${pkgs.shfmt}/bin/shfmt --indent 4 --simplify --write "$file"
-                        done
-                      ''
-                    );
-                    includes = [
-                      "*.sh"
-                      "*.bash"
-                      ".envrc*"
-                      ".env*"
-                      ".profile"
-                    ];
-                  };
-                };
-
-                pre-commit.settings.package = pkgs.prek;
-                pre-commit.settings.hooks = {
-                  cocogitto = {
-                    enable = true;
-                    name = "cog verify";
-                    description = "Lint commit messages with Cocogitto.";
-                    package = pkgs.cocogitto;
-                    entry = "${lib.getExe pkgs.cocogitto} verify --file";
-                    stages = [ "commit-msg" ];
-                  };
-                  detect-private-keys.enable = true;
-                  treefmt.enable = true;
-                  typos.enable = true;
-                };
-
-                devShells.default = pkgs.mkShellNoCC {
-                  inputsFrom = [ config.treefmt.build.devShell ];
-                  packages = lib.flatten [
-                    pkgs.just
-                    pkgs.statix
-                    pkgs.deadnix
-                    pkgs.vulnix
-                    pkgs.nixd
-                    pkgs.gh
-                    pkgs.jq
-                    pkgs.fzf
-                    config.pre-commit.settings.enabledPackages
-                    (pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-                      pkgs.dpkg
-                      pkgs.xeyes
-                      pkgs.xprop
-                      pkgs.xvfb
-                      pkgs.xwininfo
-                    ])
-                  ];
-                  shellHook = config.pre-commit.shellHook + ''
-                    if [ ! -e treefmt.toml ] || [ -L treefmt.toml ]; then
-                      ln -sf ${config.treefmt.build.configFile} treefmt.toml
-                    fi
-                  '';
-                };
-              };
-          };
-      };
-
-      partitionedAttrs = {
-        checks = "dev";
-        devShells = "dev";
-        formatter = "dev";
-      };
 
       perSystem =
         { system, ... }:
@@ -180,11 +55,75 @@
           };
 
           packages = lib.mapAttrs (_: packageFile: pkgs.callPackage packageFile { }) packageFiles;
+
+          formatters = with pkgs; [
+            biome
+            just
+            nixfmt
+            rumdl
+            shellcheck
+            shellharden
+            shfmt
+            taplo
+            treefmt
+            yamlfmt
+          ];
         in
         {
           packages = lib.filterAttrs (
             _: package: lib.meta.availableOn pkgs.stdenv.hostPlatform package
           ) packages;
+
+          formatter = pkgs.writeShellApplication {
+            name = "treefmt";
+            runtimeInputs = formatters;
+            text = ''
+              exec treefmt "$@"
+            '';
+          };
+
+          devShells.default = pkgs.mkShellNoCC {
+            packages =
+              formatters
+              ++ [
+                pkgs.cocogitto
+                pkgs.deadnix
+                pkgs.fzf
+                pkgs.gh
+                pkgs.jq
+                pkgs.nixd
+                pkgs.prek
+                pkgs.statix
+                pkgs.typos
+                pkgs.vulnix
+              ]
+              ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+                pkgs.dpkg
+                pkgs.xeyes
+                pkgs.xprop
+                pkgs.xvfb
+                pkgs.xwininfo
+              ];
+
+            shellHook = ''
+              prek install --quiet
+            '';
+          };
+
+          checks.format =
+            pkgs.runCommandLocal "format-check"
+              {
+                nativeBuildInputs = formatters ++ [ pkgs.typos ];
+              }
+              ''
+                cp -r ${./.} work
+                chmod -R u+w work
+                cd work
+                export HOME="$TMPDIR"
+                treefmt --ci
+                typos
+                touch "$out"
+              '';
         };
     };
 }
