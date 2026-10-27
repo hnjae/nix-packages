@@ -1,0 +1,90 @@
+[formatter.nixfmt]
+command = "nixfmt"
+includes = [
+  "*.nix",
+]
+
+[formatter.rumdl]
+command = "rumdl"
+options = [
+  "fmt",
+]
+includes = [
+  "*.md",
+]
+
+[formatter.taplo]
+command = "taplo"
+options = [
+  "format",
+]
+includes = [
+  "*.toml",
+]
+
+[formatter.yamlfmt]
+command = "yamlfmt"
+includes = [
+  "*.yaml",
+  "*.yml",
+]
+
+[formatter.just]
+command = "bash"
+options = [
+  "-euc",
+  '''
+  for file in "$@"; do
+    just --fmt --unstable --justfile "$file"
+  done
+  ''',
+  "--",
+]
+includes = [
+  "justfile",
+  ".justfile",
+  "*.just",
+  "*.justfile",
+]
+
+[formatter.biome]
+command = "biome"
+options = [
+  "check",
+  "--write",
+  "--no-errors-on-unmatched",
+]
+includes = [
+  "*.js",
+  "*.mjs",
+  "*.cjs",
+  "*.jsx",
+  "*.ts",
+  "*.mts",
+  "*.cts",
+  "*.tsx",
+  "*.json",
+  "*.jsonc",
+  "*.css",
+]
+
+[formatter.shell-fmt]
+command = "bash"
+options = [
+  "-euc",
+  '''
+  for file in "$@"; do
+    shellharden --replace "$file"
+    shellcheck "$file"
+    shfmt --indent 4 --simplify --write "$file"
+  done
+  ''',
+  "--",
+]
+includes = [
+  "*.sh",
+  "*.bash",
+  ".envrc*",
+  ".env*",
+  ".profile",
+]
