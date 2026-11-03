@@ -7,11 +7,11 @@
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "ttf-monoplex-cjk";
-  version = "1.1.0";
+  version = "1.2.1";
 
   src = fetchurl {
     url = "https://github.com/y-kim/monoplex/releases/download/monoplex-cjk-${version}/MonoplexCJK_v${version}.zip";
-    hash = "sha256-ugth7+ec+P605GKkSGs1uwBMVwYQZcejxow0Ndgi05U=";
+    hash = "sha256-KetY4jqyXKCJF5wgXmSN051zsuw+O6qS6tGyuCbDwUY=";
   };
 
   nativeBuildInputs = [ unzip ];
