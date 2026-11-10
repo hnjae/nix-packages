@@ -18,13 +18,13 @@
 }:
 let
   appId = "net.golbin.hop";
-  version = "0.4.5";
+  version = "0.5.2";
 
   src = fetchFromGitHub {
     owner = "golbin";
     repo = "hop";
     tag = "v${version}";
-    hash = "sha256-uxu+yb761KXJVxyc7wvjvS9A0zRpICJJxCdRzOHM83w=";
+    hash = "sha256-4gFwIIcrwylq2Mb0UbIuNvQ+GbdLc1lDBm3LBjplMEY=";
     fetchSubmodules = true;
   };
 
@@ -33,7 +33,7 @@ let
     inherit version src;
     pnpm = pnpm_10_latest;
     fetcherVersion = 4;
-    hash = "sha256-vCaiKMYiWj+U6Y9G6T4PToDm7NHW74qN+/sD3ZlmE74=";
+    hash = "sha256-3KgFpwz12fODZreg2RqrXdjB6G6FjWsDka/LhlGYZ1U=";
   };
 
   frontend = stdenv.mkDerivation {
@@ -67,7 +67,7 @@ rustPlatform.buildRustPackage {
 
   cargoRoot = "apps/desktop/src-tauri";
   buildAndTestSubdir = "apps/desktop/src-tauri";
-  cargoHash = "sha256-mxD1N6rJs6w0zpR6HELakmF9y9bz/pzBRBnPsq5IKI8=";
+  cargoHash = "sha256-O+1RNge8I8cuhBG/QhKMSgtS6m8z2GWpnw6OLa8xHKk=";
 
   nativeBuildInputs = [
     cargo-tauri.hook
