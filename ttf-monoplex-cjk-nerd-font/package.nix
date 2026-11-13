@@ -7,11 +7,11 @@
 }:
 stdenvNoCC.mkDerivation rec {
   pname = "ttf-monoplex-cjk-nerd-font";
-  version = "1.2.1";
+  version = "1.3.0";
 
   src = fetchurl {
     url = "https://github.com/y-kim/monoplex/releases/download/monoplex-cjk-nerd-font-${version}/MonoplexCJKNerdFont_v${version}.zip";
-    hash = "sha256-Y5Z79ugOJ1zXFoAXbMOWKXt/bO29R9OAYiEyvfE4UJk=";
+    hash = "sha256-NvVjzgpGr7lIK9LnoXP12NwscnMPWSUPKT3v1EymXW8=";
   };
 
   nativeBuildInputs = [ unzip ];
