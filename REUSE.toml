@@ -1,0 +1,13 @@
+version = 1
+
+[[annotations]]
+path = [
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "biome.json",
+  "flake.lock",
+]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 KIM Hyunjae"
+SPDX-License-Identifier = "GPL-3.0-or-later"
