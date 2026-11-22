@@ -42,6 +42,18 @@ let
       };
     };
   };
+
+  # Autostart entry mirroring what upstream install.py writes to
+  # ~/.config/autostart. Hidden and Terminal are omitted: false is the spec
+  # default, so the app's own --autostart toggle (which writes the user copy
+  # in ~/.config/autostart, overriding the system file by filename) starts
+  # from the same baseline.
+  autostartItem = makeDesktopItem {
+    name = "${appId}-autostart";
+    desktopName = "CodexBar";
+    exec = "${appId} --background";
+    icon = appId;
+  };
 in
 stdenv.mkDerivation {
   pname = "codexbar-desktop";
@@ -79,6 +91,13 @@ stdenv.mkDerivation {
   postInstall = ''
     install -Dm644 icon.svg \
       $out/share/icons/hicolor/scalable/apps/${appId}.svg
+
+    # Ship the autostart entry outside the regular desktopItems list so it
+    # lands in /etc-style prefix, not share/applications. Sessions only read
+    # /etc/xdg/autostart and ~/.config/autostart, so NixOS and Home Manager
+    # users point their environment at this path.
+    install -Dm644 ${autostartItem}/share/applications/${appId}-autostart.desktop \
+      $out/etc/xdg/autostart/${appId}.desktop
   '';
 
   passthru.updateScript = nix-update-script {
