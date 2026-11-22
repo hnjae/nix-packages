@@ -1,4 +1,6 @@
 #!/usr/bin/env -S just --justfile
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 KIM Hyunjae
 
 set fallback
 set unstable

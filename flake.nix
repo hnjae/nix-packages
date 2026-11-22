@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 KIM Hyunjae
+
 {
   description = "Packages that are either not in nixpkgs or not packaged to our taste.";
 
